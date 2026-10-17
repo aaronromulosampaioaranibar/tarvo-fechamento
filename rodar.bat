@@ -10,16 +10,26 @@ echo.
 echo   Deixe esta janela aberta enquanto usa a tela.
 echo.
 
-where py >nul 2>nul
-if %errorlevel%==0 (set PY=py -3) else (
-  where python >nul 2>nul
-  if %errorlevel%==0 (set PY=python) else goto :sempython
-)
+py -3 --version >nul 2>nul
+if not errorlevel 1 goto :compy
 
+python --version >nul 2>nul
+if not errorlevel 1 goto :compython
+
+goto :sempython
+
+:compy
 echo   Conferindo a biblioteca que o motor usa...
-%PY% -m pip install --quiet --disable-pip-version-check openpyxl 2>nul
+py -3 -m pip install --quiet --disable-pip-version-check openpyxl
 echo.
-%PY% abrir.py
+py -3 abrir.py
+goto :fim
+
+:compython
+echo   Conferindo a biblioteca que o motor usa...
+python -m pip install --quiet --disable-pip-version-check openpyxl
+echo.
+python abrir.py
 goto :fim
 
 :sempython
@@ -37,5 +47,6 @@ exit /b 1
 :fim
 echo.
 echo   O fechamento foi encerrado.
+echo   Se apareceu algum erro acima, mande um print dele.
 echo.
 pause
