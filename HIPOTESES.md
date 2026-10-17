@@ -110,3 +110,22 @@ As premissas estão escritas pelo efeito no trabalho dela, não pelo efeito na n
 - **Apuração de PIS/COFINS/ISS/IRRF sobre as notas.** A saída pede o valor da nota.
 - **Divergência da Atlas.** Sem contrato assinado não há taxa contra a qual comparar. Buraco explicado
   em vez de alarme falso.
+
+## E. Diferenças que conhecemos e decidimos não perseguir
+
+**R$ 8,35 entre a soma do que a Orbe cobrou e a soma do que apuramos.** Quem somar o
+`valor_taxa` das 1.781 transações de checkout com contrato (R$ 205.308,72) e comparar com
+a nossa comissão mais as divergências (R$ 205.317,07) acha R$ 8,35 de diferença. Não é erro
+de apuração: é arredondamento. Conferimos linha a linha — em 874 transações o valor bate
+exatamente, em 871 o nosso dá um centavo a mais e em 36 um centavo a menos. **A Orbe trunca
+o centavo; nós arredondamos** (`ROUND_HALF_UP`, afastando do zero, inclusive para negativos).
+
+Mantivemos o arredondamento, por três razões. A comissão que a Tarvo fatura é `valor bruto ×
+taxa contratada` apurado por operação, não a soma do que a adquirente cobrou — truncar aqui
+seria herdar a convenção da Orbe num número que é da Tarvo. Arredondar é o que a nota fiscal
+e o razão esperam. E a assimetria (871 para cima contra 36 para baixo) é justamente a
+assinatura do truncamento do outro lado: se adotássemos o truncamento, o erro mudaria de
+sinal, não desapareceria.
+
+Nenhum número entregue depende dessa diferença: comissão, divergência e devolução são todos
+calculados a partir do bruto e da taxa, nunca a partir do total cobrado pela adquirente.
