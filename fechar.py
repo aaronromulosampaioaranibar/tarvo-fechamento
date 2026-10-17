@@ -7,11 +7,12 @@
 Le os arquivos como o cliente manda (CSV pt-BR, XLSX feito a mao, .eml com anexo, OFX),
 escreve os seis arquivos de saida e nao grava nada se o autoteste de fechamento falhar.
 """
-import argparse, os, sys
+import argparse, os, sys, datetime as dt
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from src.fechamento import Fechamento
 from src.saida import gravar, autoteste
 from src.contestacoes import gerar as gerar_contestacoes
+from src.execucao import registrar
 from src import comum as C
 
 def main():
@@ -24,6 +25,7 @@ def main():
     ap.add_argument("--forcar", action="store_true", help="grava mesmo com autoteste falhando")
     a = ap.parse_args()
 
+    inicio = dt.datetime.now()
     raiz = os.path.dirname(os.path.abspath(__file__))
     entrada = a.entrada or os.path.join(raiz, "entrada", a.competencia)
     if not os.path.isdir(entrada):
@@ -59,6 +61,7 @@ def main():
     gravar("devolucoes_lojista.csv", f.devolucoes, pasta)
     gravar("rastro.csv", f.rastro, pasta)
     cont = gerar_contestacoes(f, os.path.join(raiz, "contestacoes"))
+    reg = registrar(f, entrada, pasta, inicio)
 
     chk = sum(c["comissao_brl"] for c in f.cms_checkout)
     rem = sum(c["comissao_brl"] for c in f.cms_remessa)
@@ -75,7 +78,10 @@ def main():
   Pendencias p/ uma pessoa  {len(f.pend):>14}
   Linhas de rastro ........ {len(f.rastro):>14}
 
-  Saida em {pasta}""")
+  Saida em {pasta}
+
+  Registro desta execucao em execucao.json: {len(reg['entradas'])} arquivos de entrada,
+  com hash e contagem de linhas, os parametros usados e os totais.""")
     if cont:
         print("\n  Rascunhos de contestacao (a Helena revisa e envia):")
         for destino, valor, n in cont:

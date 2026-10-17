@@ -20,9 +20,12 @@ class Fechamento:
         self.provisorio = False
 
     # ---------- utilitarios ----------
-    def _r(self, id_saida, arquivo, ref, valor):
+    def _r(self, id_saida, arquivo, ref, valor, regra=""):
+        """`regra` = por que esta linha vale esse valor. Pedido da organizacao em 17/10 14h11:
+        "em cada linha, a regra aplicada... quem abrir tem que conseguir refazer qualquer
+        numero sem perguntar para voces"."""
         self.rastro.append(dict(id_saida=id_saida, arquivo_origem=arquivo,
-                                ref_origem=ref, valor=C.n2(valor)))
+                                ref_origem=ref, valor=C.n2(valor), regra=regra))
 
     def _p(self, tipo, ref, valor, motivo, quem, arquivo=None, linhas=None):
         """Toda pendencia com valor tem de decompor em linhas de origem, igual a
@@ -32,10 +35,21 @@ class Fechamento:
         self.pend.append(dict(id_saida=i, tipo=tipo, ref_origem=ref,
                               valor_brl=C.n2(valor), motivo=motivo, quem_decide=quem))
         if linhas:
-            for arq, rf, v in linhas: self._r(i, arq, rf, v)
+            for arq, rf, v in linhas: self._r(i, arq, rf, v, f"pendencia {tipo}")
         elif arquivo:
-            self._r(i, arquivo, ref, valor)
+            self._r(i, arquivo, ref, valor, f"pendencia {tipo}")
         return i
+
+    def _regra_checkout(self, t):
+        if t["_tc"] is None:
+            return "sem taxa vigente na planilha: comissao nao apurada"
+        base = f"{C.n2(t['valor_bruto']):.2f} x {t['_tc']:.2f}%"
+        if t["_especial"]:
+            return f"isencao comercial {t['_tc']:.2f}% desde 01/09 ({t['_ref_taxa']}) · {base}"
+        if t["data_venda_original"]:
+            return (f"{t['tipo'].lower()}: taxa da venda original de "
+                    f"{C.iso(t['data_venda_original'])}, {t['_tc']:.2f}% ({t['_ref_taxa']}) · {base}")
+        return f"taxa contratada {t['_tc']:.2f}% ({t['_ref_taxa']}) · {base}"
 
     def _arq_de(self, ref):
         for t in self.orbe:
@@ -96,6 +110,14 @@ class Fechamento:
             t["_tc"], t["_ref_taxa"], t["_especial"] = tc, ref_taxa, especial
             t["_comissao"] = C.n2((t["valor_bruto"] or 0) * tc / 100) if tc is not None else None
 
+        for t in self.orbe:
+            if t.get("_duplicado_de"):
+                self._p("ID_REPETIDO_ENTRE_ARQUIVOS", t["ref_origem"], t["_comissao"] or 0,
+                        f"{t['id_transacao']} veio em {t['arquivo_origem']} e tambem em "
+                        f"{t['_duplicado_de']}. Criterio nosso (ver HIPOTESES.md): vale a linha do "
+                        f"arquivo mais recente, que e a correcao; as duas ficam no rastro. "
+                        f"A Helena pediu em 17/10 13h34 que o criterio fosse nosso e a pendencia dela",
+                        "Financeiro Tarvo", t["arquivo_origem"])
         por = defaultdict(lambda: dict(mdr=0.0, antec=0.0, n=0, ecs=set(), linhas=[], apuravel=True))
         for t in self.orbe:
             chave = t["_cnpj"] or f"EC{t['ec']}"
@@ -129,7 +151,8 @@ class Fechamento:
                                apuravel=1 if g["apuravel"] else 0))
             for t in g["linhas"]:
                 self._r(idx, t["arquivo_origem"], t["ref_origem"],
-                        t["_comissao"] if t["_comissao"] is not None else 0.0)
+                        t["_comissao"] if t["_comissao"] is not None else 0.0,
+                        self._regra_checkout(t))
             if not g["apuravel"]:
                 cobrado = C.n2(sum(x["valor_taxa"] or 0 for x in g["linhas"]))
                 self._p("SEM_TAXA_CONTRATADA", "|".join(sorted(g["ecs"])), cobrado,
@@ -231,7 +254,10 @@ class Fechamento:
                                 diferenca_pela_formula_brl=C.n2(dbrl - devolver),
                                 motivo="isencao comercial nao informada a Orbe - devolucao da Tarvo "
                                        "ao lojista pelo valor efetivamente descontado"))
-                self._r(idx, t["arquivo_origem"], t["ref_origem"], devolver)
+                self._r(idx, t["arquivo_origem"], t["ref_origem"], devolver,
+                        f"devolucao = descontado pela Orbe {C.n2(t['valor_taxa']):.2f} - "
+                        f"comissao contratada {C.n2(t['_comissao']):.2f} "
+                        f"(isencao comercial nao informada a adquirente)")
                 continue
             idx = f"DIV-CHK-{t['id_transacao']}"
             div.append(dict(id_saida=idx, cnpj=t["_cnpj"], linha_negocio="CHECKOUT",
@@ -241,7 +267,9 @@ class Fechamento:
                             valor_bruto=C.n2(t["valor_bruto"]),
                             sentido="COBRADO_A_MAIOR" if dbrl > 0 else "COBRADO_A_MENOR",
                             natureza="CONTRATO", cobrar_de="ORBE", ref_taxa_contratada=t["_ref_taxa"]))
-            self._r(idx, t["arquivo_origem"], t["ref_origem"], dbrl)
+            self._r(idx, t["arquivo_origem"], t["ref_origem"], dbrl,
+                    f"divergencia = {C.n2(t['valor_bruto']):.2f} x "
+                    f"(aplicada {t['taxa_aplicada']:.2f}% - contratada {t['_tc']:.2f}%)")
 
         # uma pendencia por contraparte e por lojista, com o detalhe anexado (pedido da Helena)
         por_loj = defaultdict(list)
@@ -356,7 +384,9 @@ class Fechamento:
                                participacao_pct=C.PARTICIPACAO_SPREAD * 100,
                                confianca_identidade=1.0, origem_identidade="CNPJ_NO_RELATORIO"))
             for o in g["linhas"]:
-                self._r(idx, o["arquivo_origem"], o["ref_origem"], o["comissao_tarvo"])
+                self._r(idx, o["arquivo_origem"], o["ref_origem"], o["comissao_tarvo"],
+                        f"{C.PARTICIPACAO_SPREAD:.0%} do spread realizado de "
+                        f"{C.n2(o['spread_brl']):.2f} (competencia por {C.COMPETENCIA_REMESSA})")
         # divergencias de spread
         assumido = set()
         for o in ops:
@@ -377,7 +407,9 @@ class Fechamento:
                              valor_bruto=C.n2(o["valor_brl"]),
                              sentido="COBRADO_A_MAIOR" if dbrl > 0 else "COBRADO_A_MENOR",
                              natureza="CONTRATO", cobrar_de="PONTE", ref_taxa_contratada=ref_taxa))
-            self._r(idx, o["arquivo_origem"], o["ref_origem"], dbrl)
+            self._r(idx, o["arquivo_origem"], o["ref_origem"], dbrl,
+                    f"divergencia de spread = base {C.n2(base):.2f} x "
+                    f"(aplicado {o['spread_pct']:.4f}% - contratado {contratado:.2f}%)")
         for cnpj in sorted(assumido):
             vol = C.n2(sum(o["spread_brl"] for o in ops if o["cnpj"] == cnpj))
             self._p("SPREAD_PADRAO_ASSUMIDO", cnpj, vol,
@@ -414,7 +446,9 @@ class Fechamento:
                             metodo=cl["metodo"], confianca=round(cl["confianca"], 2),
                             conta_descricao=self.plano.get(cl["conta"], {}).get("descricao", ""),
                             cnpj_lojista=cl["cnpj_lojista"] or ""))
-            self._r(idx, lanc["arquivo_origem"], lanc["ref_origem"], lanc["valor"])
+            self._r(idx, lanc["arquivo_origem"], lanc["ref_origem"], lanc["valor"],
+                    f"{cl['conta'] or 'sem conta'} {cl['rotulo']} · {cl['metodo']} "
+                    f"(confianca {cl['confianca']:.2f})")
             if cl["metodo"] == "HUMANO" or cl["conta"] is None:
                 self._p("CLASSIFICACAO_MANUAL", lanc["ref_origem"], lanc["valor"],
                         cl["motivo"] or "lancamento sem regra", "Financeiro Tarvo", lanc["arquivo_origem"])
@@ -470,7 +504,7 @@ class Fechamento:
                                            f"{c['comissao_antecipacao_brl']:.2f} sobre "
                                            f"{c['qtd_transacoes']} transacoes")))
             for r in [x for x in self.rastro if x["id_saida"] == c["id_saida"]]:
-                self._r(idx, r["arquivo_origem"], r["ref_origem"], r["valor"])
+                self._r(idx, r["arquivo_origem"], r["ref_origem"], r["valor"], r.get("regra", ""))
         total = C.n2(sum(c["comissao_brl"] for c in self.cms_remessa))
         if TOMADOR_NF_REMESSA == "PONTE" and total > 0:
             idx = "NF-REM-PONTE"
@@ -482,7 +516,7 @@ class Fechamento:
                                            f"{nops} operacoes")))
             for c in self.cms_remessa:
                 for r in [x for x in self.rastro if x["id_saida"] == c["id_saida"]]:
-                    self._r(idx, r["arquivo_origem"], r["ref_origem"], r["valor"])
+                    self._r(idx, r["arquivo_origem"], r["ref_origem"], r["valor"], r.get("regra", ""))
             self._p("TOMADOR_DA_NF_DE_CAMBIO", idx, total,
                     "NF de intermediacao emitida contra a Ponte Cambio (premissa Q12, baseada no e-mail: "
                     "repasse 'mediante recebimento da nota fiscal de intermediacao'). "

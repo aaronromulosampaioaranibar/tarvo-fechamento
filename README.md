@@ -32,12 +32,30 @@ python3 fechar.py --entrada "./entrada/2026-10" --competencia 2026-10
 | `notas_a_emitir.csv` | 21 |
 | `lancamentos_classificados.csv` | 184, 100% com conta, todos por regra |
 | `pendencias.csv` | 31 |
-| `rastro.csv` | 5.389 |
+| `rastro.csv` | 5.389, com a **regra aplicada** em cada linha |
+| `saida/execucao.json` | registro da rodada: arquivos, linhas, hash, parâmetros e totais |
 
 Mais `contestacoes/`: três rascunhos de e-mail por contraparte, com as operações em anexo,
 para o financeiro revisar e enviar.
 
 Formato fixo: `;` como separador, `.` decimal, datas `AAAA-MM-DD`, CNPJ com 14 dígitos.
+
+## Auditabilidade
+
+Cada linha de `rastro.csv` carrega a **regra aplicada**, não só o valor:
+
+```
+CMS-CHK-00520815000100 ; TX88410932 ; 0.00  ; isencao comercial 0.00% desde 01/09
+                                              (condicoes_especiais.csv!...) · 608.88 x 0.00%
+DIV-CHK-TX88423890     ; TX88423890 ; 32.25 ; divergencia = 6449.10 x (aplicada 4.09% -
+                                              contratada 3.59%)
+LCT-AURORA-L9          ; L9  ; 66026.00     ; 1.1.03.001 liquidacao da adquirente Orbe ·
+                                              REGRA (confianca 1.00)
+```
+
+E `saida/execucao.json` registra cada rodada: quais arquivos entraram, com quantas linhas,
+tamanho e hash SHA-256, os parâmetros usados, e os totais que saíram. Meses depois dá para
+provar que aquela saída veio daqueles arquivos.
 
 ## Prova de que roda do zero
 

@@ -34,6 +34,9 @@ Toda decisão delegada está escrita aqui com o motivo, que foi o que a Helena p
 | A20 | A Orbe deposita **tudo** no Aurora e não paga lojista direto. O saldo negativo é a **conta garantida**. Conciliar Orbe contra banco parcela a parcela **não é o que este fechamento precisa**. | fora do escopo | Insper AI, 16/10 22h34 |
 | A21 | A **provisão de setembro** é feita pela contabilidade, fora do fechamento automático. O fechamento classifica o que passou nos extratos. | fora do escopo | Datarmos, 17/10 11h49 |
 | A22 | Tarvo **não vende acima de 12x**. Se aparecer, é pendência. | `comum.MAX_PARCELAS` | Casa Barton, 17/10 11h01 |
+| A23 | A isenção da Casa vale, na antecipação, **pela data da antecipação**, não pelas vendas que geraram os recebíveis. | `_dref` usa `data_movimento` quando não há venda original | David Deodato, 17/10 13h34 |
+| A24 | O arquivo de ajustes tardios entra **no mês do movimento** se chegar antes da aprovação do fechamento; depois disso, no mês seguinte. Não vem todo mês. | `achar_varios("orbe")` | Lucca Landeiro, 17/10 13h34 |
+| A25 | Auditabilidade: além do rastro, **registro de cada execução** (arquivos, linhas, data e hora) e **a regra aplicada em cada linha do rastro**. | `src/execucao.py`, coluna `regra` | Organização, 17/10 14h11 |
 
 ---
 
@@ -51,6 +54,8 @@ Toda decisão delegada está escrita aqui com o motivo, que foi o que a Helena p
 | **B7** | Os três centavos da divergência da Mundo Aberto | **`valor_bruto × (aplicada − contratada)`**, como a Helena pediu em A3 → R$ 1.418,87 | É a fórmula que ela própria definiu para o valor da divergência. Usar o `Spread R$` do relatório daria R$ 1.418,88, mas misturaria o arredondamento da Ponte no nosso número. |
 | **B8** | `quem_decide` | Texto livre com **área + papel** (ex.: "Financeiro Tarvo + Parceiro Orbe") | A organização confirmou que é texto livre. Nomear as duas pontas deixa claro quem contesta e quem ressarce. |
 | **B9** | Vários `ref_origem` numa pendência | Separados por **`|`** | A organização confirmou que vale. Usamos `;` como separador do CSV, então `|` evita qualquer ambiguidade de parsing. |
+| **B10** | Mesmo `id_transacao` no relatório e no arquivo de ajustes | **Vale a linha do arquivo mais recente**, que é a correção; as duas ficam no rastro e abre-se pendência | A Helena disse em 17/10 13h34 que nunca aconteceu e que o critério é nosso. Um ajuste tardio existe para corrigir; se ele repete um id, é porque está corrigindo aquela linha. Não aconteceu em setembro: zero casos. |
+| **B11** | Bandeira diferente entre o estorno e a venda que ele referencia | **Ignorada**: o vínculo é pela referência, e bandeira não entra em nenhum cálculo | A Helena confirmou em 17/10 14h08: *"bandeira não muda a taxa para a gente... não precisa contestar nem abrir pendência"*. Em setembro são **46** casos, não só os 7 do arquivo de ajustes. Se tivéssemos olhado para bandeira, seriam 46 alarmes falsos. |
 
 ---
 

@@ -19,7 +19,7 @@ COLUNAS = {
   "lancamentos_classificados.csv": ["id_saida","banco","ref_origem","data","descricao","valor",
       "conta_codigo","metodo","confianca","conta_descricao","cnpj_lojista"],
   "pendencias.csv": ["id_saida","tipo","ref_origem","valor_brl","motivo","quem_decide"],
-  "rastro.csv": ["id_saida","arquivo_origem","ref_origem","valor"],
+  "rastro.csv": ["id_saida","arquivo_origem","ref_origem","valor","regra"],
 }
 
 def _fmt(v):
