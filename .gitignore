@@ -5,3 +5,4 @@ __pycache__/
 
 # cada rodada feita pela tela grava aqui; a saida entregue fica em saida/
 execucoes/
+erro.txt

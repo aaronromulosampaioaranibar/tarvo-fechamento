@@ -97,6 +97,7 @@ class App(BaseHTTPRequestHandler):
     def do_POST(self):
         if urlparse(self.path).path != "/fechar":
             return self._envia(b"nao encontrado", "text/plain", 404)
+        comp = ""
         try:
             n = int(self.headers.get("Content-Length", 0))
             campos, arquivos = partes(self.headers, self.rfile.read(n))
@@ -131,12 +132,28 @@ class App(BaseHTTPRequestHandler):
             tem = [(nome, t) for nome, t in ARQS if os.path.isfile(os.path.join(sai, nome))]
             return self._envia(web.resultado(f, reg, ok, falhas, conferencias, rel, tem, cont))
         except FileNotFoundError as e:
-            return self._envia(web.form(campos.get("competencia", ""),
-                f"Faltou um arquivo que o fechamento precisa: {e}"))
+            self._log(e)
+            return self._envia(web.form(comp, f"Faltou um arquivo que o fechamento precisa: {e}"))
         except Exception as e:
-            import traceback; traceback.print_exc()
-            return self._envia(web.form(campos.get("competencia", "") if "campos" in dir() else "",
-                f"Nao consegui ler os arquivos: {type(e).__name__}: {e}"))
+            det = self._log(e)
+            try:
+                return self._envia(web.form(comp, f"Nao consegui fechar: {type(e).__name__}: {e}. "
+                                                  f"O detalhe foi gravado em erro.txt, ao lado do rodar.bat."))
+            except Exception:
+                # ultimo recurso: texto puro, para a conexao nunca cair sem explicacao
+                try: self._envia(det.encode("utf-8", "replace"), "text/plain; charset=utf-8", 500)
+                except Exception: pass
+
+    def _log(self, e):
+        import traceback
+        det = "".join(traceback.format_exception(type(e), e, e.__traceback__))
+        try:
+            with open(os.path.join(RAIZ, "erro.txt"), "a", encoding="utf-8") as fh:
+                fh.write(f"\n===== {dt.datetime.now().isoformat(timespec='seconds')} =====\n{det}")
+        except Exception: pass
+        try: sys.stderr.write("\n" + det + "\n"); sys.stderr.flush()
+        except Exception: pass
+        return det
 
 def porta_livre(inicio=8777):
     for p in range(inicio, inicio + 40):
