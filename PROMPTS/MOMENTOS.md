@@ -1,23 +1,15 @@
 # Momentos que importaram
 
-## 1. Pedi para ler os arquivos antes de escrever qualquer código
+O case pede de 2 a 4. Sao quatro, e em tres deles a IA errou.
 
-**O que pedi:** mapear os seis arquivos do data pack — estrutura, chaves, volumes, onde eles
-se ligam — antes de desenhar solução.
+O que nao esta aqui porque nao foi um momento e sim o metodo: mapeamos as seis fontes
+antes de escrever uma linha de codigo. Foi dai que saiu a causa raiz, e esta inteira no
+`DIAGNOSTICO.md`.
 
-**O que a IA devolveu:** que nenhum dos seis arquivos compartilha chave com os outros. A Orbe
-só tem `cod_estabelecimento`, a planilha de taxas tem CNPJ em três formatos com quatro ECs em
-branco, e os dois bancos só têm nome truncado. Quatro dos 22 ECs da Orbe não existem na
-planilha: R$ 35.369 de comissão sem dono.
-
-**O que fizemos com isso:** virou a causa raiz do diagnóstico e a primeira decisão de
-arquitetura — cadastro de identidade como camada própria, com nome proibido de ser chave
-primária. Se tivéssemos começado pelo código, teríamos feito casamento de nome e os dois
-Horizonte (taxas diferentes) teriam entrado trocados sem ninguém perceber.
 
 ---
 
-## 2. A IA inverteu a vigência da Bridge e produziu 12 divergências falsas
+## 1. A IA inverteu a vigência da Bridge e produziu 12 divergências falsas
 
 **O que pedi:** calcular as divergências entre taxa contratada e taxa aplicada, respeitando
 que a Bridge tem duas linhas de taxa no mesmo mês (até 14/09 e a partir de 15/09).
@@ -37,7 +29,7 @@ seriam alarme falso, e todos pareciam plausíveis.
 
 ---
 
-## 3. O autoteste barrou a própria entrega por R$ 0,03
+## 2. O autoteste barrou a própria entrega por R$ 0,03
 
 **O que pedi:** que nada fosse gravado se a soma do `rastro.csv` não batesse com o número
 reportado.
@@ -55,7 +47,7 @@ depois — não é.
 
 ---
 
-## 4. O arquivo novo teria passado em silêncio
+## 3. O arquivo novo teria passado em silêncio
 
 **O que aconteceu:** às 13h a organização avisou que a Orbe mandou
 `06_orbe_ajustes_tardios_set2026.csv`, com 14 linhas, "no mesmo formato do arquivo 01",
@@ -78,7 +70,7 @@ coberto metade dele.
 
 ---
 
-## 5. A auditoria independente achou o que o autoteste não via
+## 4. A auditoria independente achou o que o autoteste não via
 
 **O que pedi:** um auditor que conferisse o rastro **sem importar nada de `src/`** —
 relendo os CSVs gravados e os arquivos crus, com parsing próprio. A ideia era não

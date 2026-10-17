@@ -1,7 +1,13 @@
-# Histórico das sessões de IA
+# Historico das sessoes de IA
 
-- `MOMENTOS.md` — os momentos que mudaram a direção do trabalho.
-- `sessao-01-*.md` — transcript completo das sessões, sem edição (chaves de API e dados
-  pessoais removidos).
+O case pede o historico de **todas** as sessoes, de construcao e de preparacao, sem edicao
+alem de remover chaves de API e dados pessoais.
 
-Ferramenta: Claude Code (Opus 5), sessão iniciada em 17/10/2026, ~08h40.
+| Arquivo | Quem | Ferramenta | Quando |
+|---|---|---|---|
+| `MOMENTOS.md` | time | — | os quatro momentos que mudaram a direcao do trabalho |
+| `sessao-01-claude-aaron.md` | Aaron Romulo | Claude Code (Opus 5) | 17/10, a partir das 08h40 |
+| `sessao-02-gemini-guilherme-barros.md` | Guilherme Barros | Gemini | 16 e 17/10 |
+
+O link desta sessao do Claude tambem esta em **todos os commits** do repositorio, na linha
+`Claude-Session:` da mensagem. `git log` mostra a sequencia inteira do trabalho com horario.
