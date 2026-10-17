@@ -7,7 +7,7 @@
 Le os arquivos como o cliente manda (CSV pt-BR, XLSX feito a mao, .eml com anexo, OFX),
 escreve os seis arquivos de saida e nao grava nada se o autoteste de fechamento falhar.
 """
-import argparse, os, sys, datetime as dt
+import argparse, os, re, sys, datetime as dt
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from src.fechamento import Fechamento
 from src.saida import gravar, autoteste
@@ -20,14 +20,32 @@ def main():
     ap.add_argument("--entrada", default=None,
                     help="pasta com os arquivos do mes, do jeito que chegaram "
                          "(padrao: entrada/<competencia>)")
-    ap.add_argument("--competencia", default="2026-09", help="AAAA-MM")
+    ap.add_argument("--competencia", default=None,
+                    help="AAAA-MM (padrao: a pasta mais recente dentro de entrada/)")
     ap.add_argument("--saida", default="saida")
     ap.add_argument("--forcar", action="store_true", help="grava mesmo com autoteste falhando")
     a = ap.parse_args()
 
     inicio = dt.datetime.now()
     raiz = os.path.dirname(os.path.abspath(__file__))
-    entrada = a.entrada or os.path.join(raiz, "entrada", a.competencia)
+
+    # Sem --competencia, fechamos a pasta mais recente de entrada/. Quem roda pelo
+    # atalho do Windows nao passa argumento nenhum: criar entrada/2026-10 e largar
+    # os arquivos la dentro e tudo o que o mes seguinte vai exigir.
+    comp = a.competencia
+    if not comp:
+        base = os.path.join(raiz, "entrada")
+        meses = sorted(d for d in (os.listdir(base) if os.path.isdir(base) else [])
+                       if re.fullmatch(r"\d{4}-\d{2}", d)
+                       and os.path.isdir(os.path.join(base, d)))
+        if not meses and not a.entrada:
+            print(f"nenhuma pasta de mes encontrada em {base}\n"
+                  f"crie entrada/AAAA-MM (ex.: entrada/2026-10) e coloque os arquivos la")
+            return 2
+        comp = meses[-1] if meses else "2026-09"
+        if not a.entrada: print(f"competencia: {comp}  (pasta mais recente em entrada/)")
+    a.competencia = comp
+    entrada = a.entrada or os.path.join(raiz, "entrada", comp)
     if not os.path.isdir(entrada):
         print(f"pasta de entrada nao encontrada: {entrada}\n"
               f"use --entrada para apontar a pasta do mes")

@@ -6,26 +6,33 @@ com rastro de cada número até a linha de origem.
 
 ## Rodar
 
-**Pela tela**, que é como a analista usa:
+**Como a Helena usa.** A pasta é a interface: ela larga os arquivos do mês, do jeito
+que chegaram, em `entrada/AAAA-MM` (para outubro, cria `entrada/2026-10`) e dá dois
+cliques:
 
 | | |
 |---|---|
-| Windows | duplo clique em `rodar.bat` |
-| Mac e Linux | duplo clique em `rodar.command` |
+| Windows | `FECHAR O MES.bat` |
+| Mac e Linux | `fechar.command` |
 
-O navegador abre sozinho. Ela escolhe a competência, arrasta os arquivos do mês do jeito
-que chegaram, clica em **Fechar o mês**, e a página mostra os totais, as pendências com
-motivo e dono, e os links para baixar cada arquivo ou tudo num `.zip`.
+Uma janela mostra os totais, as pendências com motivo e dono, e abre a pasta `saida/`
+no final. Se alguma fonte faltar ou vier com o layout trocado, ela diz o que faltou,
+fecha o que dá e marca o resultado como `[PROVISÓRIO]` — nada é gravado pela metade.
+Não precisa escolher competência nem digitar nada: sem argumento, o programa fecha a
+pasta de mês mais recente que encontrar em `entrada/`.
 
-Tudo roda na própria máquina, em `127.0.0.1`. Nenhum arquivo sai de lá, não há chave de
-API e funciona sem internet. Cada rodada é gravada em `execucoes/<competência>_<data-hora>/`,
-então uma rodada nova nunca sobrescreve a anterior.
+Tudo roda na própria máquina. Nenhum arquivo sai dela, não há chave de API e funciona
+sem internet.
+
+**Opcional, uma tela no navegador** (`abrir.py`) faz o mesmo por upload, para quem
+prefere arrastar os arquivos em vez de copiá-los para a pasta. É conveniência: o
+caminho suportado, e o que a banca deve rodar, é o acima.
 
 **Pelo terminal**, que é como a banca roda:
 
 ```bash
 python3 -m pip install -r requirements.txt   # só openpyxl
-python3 fechar.py                            # usa entrada/2026-09 e grava em saida/
+python3 fechar.py                            # fecha a pasta mais recente de entrada/
 python3 fechar.py --entrada "/pasta/do/mes" --competencia 2026-10
 ```
 
@@ -33,12 +40,8 @@ Sem chaves de API para o caminho padrão: **todo número sai de regra determiní
 A camada de IA é opcional e só toca o resíduo da classificação contábil (veja abaixo).
 
 Não há passo manual antes de rodar. Os arquivos são localizados por padrão de nome
-(`*orbe*comiss*.csv`, `*taxas*.xlsx`, `*.eml`, `*aurora*.csv`, `*.ofx`, `*plano*contas*.csv`),
-então outubro roda com arquivos novos sem tocar no código:
-
-```bash
-python3 fechar.py --entrada "./entrada/2026-10" --competencia 2026-10
-```
+(`*orbe*.csv`, `*taxas*.xlsx`, `*.eml`, `*aurora*.csv`, `*.ofx`, `*plano*contas*.csv`),
+então outubro roda com arquivos novos sem tocar no código.
 
 ## O que sai
 
