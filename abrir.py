@@ -179,10 +179,29 @@ class App(BaseHTTPRequestHandler):
         return det
 
 def porta_livre(inicio=8777):
-    for p in range(inicio, inicio + 40):
-        with socket.socket() as s:
-            if s.connect_ex(("127.0.0.1", p)) != 0: return p
-    return 0
+    """Sempre a 8777 - e, se ela estiver ocupada, para e explica.
+
+    Antes procuravamos a proxima porta livre em silencio. Isso escondeu um erro
+    por horas: um servidor antigo continuava na 8777, a tela nova subia na 8778,
+    e o navegador aberto na 8777 falava com o codigo velho. Melhor nao subir do
+    que subir num endereco que a pessoa nao esperava."""
+    s = socket.socket()
+    try:
+        s.bind(("127.0.0.1", inicio)); s.close(); return inicio
+    except OSError:
+        s.close()
+        print(f"""
+  A porta {inicio} ja esta em uso.
+
+  Quase sempre e uma janela desta mesma tela que ficou aberta de uma tentativa
+  anterior. Feche as outras janelas pretas/azuis e rode de novo. Se nao achar
+  nenhuma, cole no PowerShell:
+
+      taskkill /F /IM python.exe
+
+  (isso fecha so os programas em Python, nada mais) e rode de novo.
+""")
+        raise SystemExit(1)
 
 def main():
     os.makedirs(EXECUCOES, exist_ok=True)
