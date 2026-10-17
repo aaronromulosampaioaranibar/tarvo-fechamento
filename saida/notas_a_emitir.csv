@@ -1,0 +1,22 @@
+id_saida;tomador_cnpj;tomador;linha_negocio;valor_brl;discriminacao
+NF-CHK-03229837000103;03229837000103;Fluente Idiomas Online Ltda;CHECKOUT;7316.07;Intermediacao de pagamentos 2026-09: MDR R$ 7316.07 + antecipacao R$ 0.00 sobre 82 transacoes
+NF-CHK-07752116000126;07752116000126;Kiwi Experience;CHECKOUT;10711.41;Intermediacao de pagamentos 2026-09: MDR R$ 10208.39 + antecipacao R$ 503.02 sobre 85 transacoes
+NF-CHK-08780784000120;08780784000120;Campus Global Ltda;CHECKOUT;9336.06;Intermediacao de pagamentos 2026-09: MDR R$ 9336.06 + antecipacao R$ 0.00 sobre 79 transacoes
+NF-CHK-16181276000153;16181276000153;EduAbroad;CHECKOUT;12070.17;Intermediacao de pagamentos 2026-09: MDR R$ 10312.30 + antecipacao R$ 1757.87 sobre 100 transacoes
+NF-CHK-17217888000111;17217888000111;Mundo Aberto;CHECKOUT;18522.09;Intermediacao de pagamentos 2026-09: MDR R$ 17337.07 + antecipacao R$ 1185.02 sobre 168 transacoes
+NF-CHK-20987545000140;20987545000140;Vela;CHECKOUT;9315.31;Intermediacao de pagamentos 2026-09: MDR R$ 9315.31 + antecipacao R$ 0.00 sobre 51 transacoes
+NF-CHK-21394880000106;21394880000106;Trilha Jovem Turismo Ltda;CHECKOUT;5628.57;Intermediacao de pagamentos 2026-09: MDR R$ 5628.57 + antecipacao R$ 0.00 sobre 67 transacoes
+NF-CHK-22224579000109;22224579000109;Escola Bridge de Idiomas Ltda;CHECKOUT;11916.02;Intermediacao de pagamentos 2026-09: MDR R$ 11916.02 + antecipacao R$ 0.00 sobre 107 transacoes
+NF-CHK-23109187000161;23109187000161;Oxford Prep Cursos Ltda;CHECKOUT;16077.90;Intermediacao de pagamentos 2026-09: MDR R$ 9529.99 + antecipacao R$ 6547.91 sobre 98 transacoes
+NF-CHK-34671260000100;34671260000100;Maple Study Assessoria Educacional Ltda;CHECKOUT;15010.78;Intermediacao de pagamentos 2026-09: MDR R$ 12476.24 + antecipacao R$ 2534.54 sobre 105 transacoes
+NF-CHK-50900987000179;50900987000179;Bagagem Livre Turismo Ltda;CHECKOUT;7703.98;Intermediacao de pagamentos 2026-09: MDR R$ 7703.98 + antecipacao R$ 0.00 sobre 74 transacoes
+NF-CHK-53857560000123;53857560000123;Canguru;CHECKOUT;11679.43;Intermediacao de pagamentos 2026-09: MDR R$ 8917.78 + antecipacao R$ 2761.65 sobre 80 transacoes
+NF-CHK-61720397000180;61720397000180;Lisboa Cursos e Viagens Ltda;CHECKOUT;8470.78;Intermediacao de pagamentos 2026-09: MDR R$ 8470.78 + antecipacao R$ 0.00 sobre 76 transacoes
+NF-CHK-66564512000199;66564512000199;Novo Horizonte Intercambio;CHECKOUT;7767.78;Intermediacao de pagamentos 2026-09: MDR R$ 7767.78 + antecipacao R$ 0.00 sobre 73 transacoes
+NF-CHK-67869675000142;67869675000142;Bem-Vindo Exchange Ltda;CHECKOUT;9259.74;Intermediacao de pagamentos 2026-09: MDR R$ 9259.74 + antecipacao R$ 0.00 sobre 76 transacoes
+NF-CHK-68567965000102;68567965000102;Dublin Hub Intercâmbio Ltda;CHECKOUT;11906.08;Intermediacao de pagamentos 2026-09: MDR R$ 9390.27 + antecipacao R$ 2515.81 sobre 111 transacoes
+NF-CHK-78576234000179;78576234000179;Horizonte Viagens;CHECKOUT;9014.42;Intermediacao de pagamentos 2026-09: MDR R$ 9014.42 + antecipacao R$ 0.00 sobre 75 transacoes
+NF-CHK-85694108000184;85694108000184;Andes Expedições Ltda;CHECKOUT;3819.35;Intermediacao de pagamentos 2026-09: MDR R$ 3819.35 + antecipacao R$ 0.00 sobre 41 transacoes
+NF-CHK-89779285000114;89779285000114;Sol Nascente Viagens Ltda;CHECKOUT;5898.02;Intermediacao de pagamentos 2026-09: MDR R$ 5898.02 + antecipacao R$ 0.00 sobre 60 transacoes
+NF-CHK-95927868000148;95927868000148;Rota Global Intercâmbio Ltda;CHECKOUT;15621.27;Intermediacao de pagamentos 2026-09: MDR R$ 14495.62 + antecipacao R$ 1125.65 sobre 159 transacoes
+NF-REM-PONTE;75374179000146;PONTE CAMBIO S.A.;REMESSA;39543.45;Intermediacao de cambio 2026-09: participacao de 50% sobre o spread realizado de 228 operacoes

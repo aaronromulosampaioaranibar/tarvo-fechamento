@@ -1,0 +1,337 @@
+<title>Fluxo e gargalos da Tarvo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@600;700&display=swap">
+<style>
+/* Mapa de processo em faixas: duas linhas de negocio + caixa, sobre a planilha que sustenta tudo. */
+:root{
+  --papel:#f6f7f9; --carta:#ffffff; --tinta:#131821; --meio:#5c6675; --fraco:#8d97a6;
+  --risco:#dde2e9; --borda:#cbd3dd;
+  --sis:#2c4a7c;        /* sistema de origem */
+  --rec:#0f6b5c;        /* onde a Tarvo ganha */
+  --gar:#a8322a;        /* gargalo */
+  --raiz:#9a6412;       /* a planilha, raiz de tudo */
+  --seta:#9aa5b4;
+  --d:'IBM Plex Serif',Georgia,serif;
+  --s:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+  --m:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --papel:#0f131a; --carta:#171d27; --tinta:#e6eaf0; --meio:#9aa5b4; --fraco:#6d7786;
+  --risco:#262e3a; --borda:#323c4a;
+  --sis:#8fb1e8; --rec:#4fc0a8; --gar:#f0847a; --raiz:#e0ad5c; --seta:#5a6575; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --papel:#0f131a; --carta:#171d27; --tinta:#e6eaf0; --meio:#9aa5b4; --fraco:#6d7786;
+  --risco:#262e3a; --borda:#323c4a;
+  --sis:#8fb1e8; --rec:#4fc0a8; --gar:#f0847a; --raiz:#e0ad5c; --seta:#5a6575; color-scheme:dark;}
+
+body{background:var(--papel);color:var(--tinta);font-family:var(--s);line-height:1.5;margin:0}
+.wrap{max-width:1300px;margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:28px 56px}
+
+header{border-bottom:2px solid var(--tinta);padding-bottom:18px;margin-bottom:22px}
+.eyebrow{font-family:var(--m);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--meio);margin:0 0 8px}
+h1{font-family:var(--d);font-weight:700;font-size:clamp(28px,5vw,44px);line-height:1.08;
+  margin:0 0 10px;text-wrap:balance;letter-spacing:-.015em}
+.lead{font-size:clamp(15px,2.2vw,17px);color:var(--meio);max-width:62ch;margin:0}
+
+.kpis{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 26px}
+.k{flex:1 1 170px;min-width:0;background:var(--carta);border:1px solid var(--borda);
+  border-radius:8px;padding:12px 14px}
+.k b{display:block;font-family:var(--m);font-size:clamp(17px,2.6vw,21px);font-weight:600;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.k span{display:block;font-size:11.5px;color:var(--meio);margin-top:3px;line-height:1.35}
+.k.r b{color:var(--gar)}
+.k.v b{color:var(--rec)}
+
+.mapa{background:var(--carta);border:1px solid var(--borda);border-radius:10px;
+  overflow-x:auto;padding:14px;margin-bottom:10px}
+.mapa svg{display:block;min-width:1100px;height:auto}
+
+.leg{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:12px;color:var(--meio);margin-bottom:36px}
+.leg i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;
+  vertical-align:-1px;border:1px solid var(--borda)}
+.leg .i1{background:color-mix(in srgb,var(--sis) 10%,var(--carta));border-color:var(--sis)}
+.leg .i2{background:color-mix(in srgb,var(--rec) 10%,var(--carta));border-color:var(--rec)}
+.leg .i3{background:var(--gar);border-color:var(--gar)}
+.leg .i4{background:color-mix(in srgb,var(--raiz) 12%,var(--carta));border-color:var(--raiz)}
+
+h2{font-family:var(--d);font-size:clamp(20px,3.2vw,26px);margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--meio);font-size:14px;margin:0 0 20px}
+
+.grade{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.g{background:var(--carta);border:1px solid var(--borda);border-left:3px solid var(--gar);
+  border-radius:8px;padding:15px 16px 13px;display:flex;flex-direction:column;min-width:0}
+.g-h{display:flex;align-items:baseline;gap:9px;margin-bottom:7px}
+.g-n{font-family:var(--m);font-size:11px;font-weight:600;color:var(--carta);background:var(--gar);
+  width:19px;height:19px;border-radius:50%;display:grid;place-items:center;flex:none;
+  align-self:center}
+.g h3{font-size:14.5px;font-weight:600;margin:0;line-height:1.3}
+.g p{font-size:13px;color:var(--meio);margin:0 0 12px;flex:1}
+.g code{font-family:var(--m);font-size:11.5px;background:var(--papel);padding:1px 4px;border-radius:3px}
+.g-f{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;border-top:1px solid var(--risco);
+  padding-top:10px}
+.g-v{font-family:var(--m);font-size:16px;font-weight:600;color:var(--gar);
+  font-variant-numeric:tabular-nums}
+.g-l{font-size:11.5px;color:var(--fraco)}
+.g-d{margin-left:auto;font-family:var(--m);font-size:10px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--meio);background:var(--papel);
+  border:1px solid var(--risco);border-radius:20px;padding:2px 8px;white-space:nowrap}
+
+footer{margin-top:34px;border-top:1px solid var(--risco);padding-top:16px;
+  font-size:12.5px;color:var(--fraco)}
+footer b{color:var(--meio);font-weight:600}
+
+/* --- SVG --- */
+.ch{font-family:var(--m);font-size:10px;letter-spacing:.13em;fill:var(--fraco)}
+.rl{stroke:var(--risco);stroke-width:1}
+.fx{fill:none;stroke:var(--risco);stroke-width:1}
+.fx.la{stroke:color-mix(in srgb,var(--sis) 32%,transparent)}
+.fx.lb{stroke:color-mix(in srgb,var(--sis) 32%,transparent)}
+.fx.lc{stroke:var(--risco)}
+.fxt{font-family:var(--m);font-size:12px;font-weight:600;letter-spacing:.1em;fill:var(--sis)}
+.lc-t{fill:var(--meio)}
+.fxs{font-family:var(--s);font-size:11.5px;fill:var(--fraco)}
+.cx{fill:var(--carta);stroke:var(--borda);stroke-width:1}
+.cx-ok{stroke:var(--rec);stroke-width:1.4}
+.bt{font-family:var(--s);font-size:13.5px;font-weight:600;fill:var(--tinta)}
+.bd{font-family:var(--s);font-size:10.8px;fill:var(--meio)}
+.vz{font-family:var(--s);font-size:11.5px;font-style:italic;fill:var(--fraco)}
+.fl{stroke:var(--seta);stroke-width:1.4;fill:none}
+.fl-d{stroke-dasharray:4 3}
+.fr{font-family:var(--m);font-size:9px;fill:var(--fraco);text-anchor:middle}
+.mk{fill:var(--gar)}
+.mkt{font-family:var(--m);font-size:11.5px;font-weight:600;fill:var(--carta);text-anchor:middle}
+.sp{fill:color-mix(in srgb,var(--raiz) 9%,var(--carta));stroke:var(--raiz);stroke-width:1.3}
+.spt{font-family:var(--m);font-size:12px;font-weight:600;letter-spacing:.06em;fill:var(--raiz)}
+.spa{font-family:var(--s);font-size:12px;font-weight:600;fill:var(--tinta)}
+.spb{font-family:var(--s);font-size:10.8px;fill:var(--meio)}
+.spc{font-family:var(--s);font-size:12px;font-style:italic;fill:var(--raiz)}
+.up{stroke:var(--raiz);stroke-width:1.2;stroke-dasharray:3 3;fill:none;opacity:.8}
+
+@media (max-width:560px){.g-d{margin-left:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Case Tarvo Pagamentos &middot; competencia 09/2026</p>
+  <h1>Do cartao do aluno ate o lancamento contabil</h1>
+  <p class="lead">Duas linhas de negocio, cinco sistemas e uma planilha no meio. O mapa segue o dinheiro
+  de ponta a ponta e marca os sete pontos onde o fechamento trava, erra ou vaza.</p>
+</header>
+
+<div class="kpis">
+  <div class="k v"><b>R$ 270.506</b><span>receita apurada em setembro</span></div>
+  <div class="k r"><b>R$ 2.995</b><span>cobrado a maior, por mes</span></div>
+  <div class="k r"><b>R$ 35.369</b><span>comissao sem dono certo</span></div>
+  <div class="k"><b>184</b><span>lancamentos conferidos a mao</span></div>
+  <div class="k"><b>8 dias</b><span>uteis para fechar, com 3 pessoas</span></div>
+</div>
+
+<div class="mapa"><svg viewBox="0 0 1260 812" width="1260" role="img"
+  aria-label="Mapa do fluxo de pagamentos da Tarvo nas duas linhas de negocio, do pagamento ao registro contabil, com sete gargalos marcados">
+<defs>
+  <marker id="pt" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,1 L9,5 L0,9 z" fill="var(--seta)"/></marker>
+  <marker id="ptu" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M0,1 L9,5 L0,9 z" fill="var(--raiz)"/></marker>
+</defs>
+<text class="ch" x="30" y="26">ORIGEM DO DINHEIRO</text>
+<text class="ch" x="240" y="26">O PARCEIRO PROCESSA</text>
+<text class="ch" x="460" y="26">O QUE CHEGA NA TARVO</text>
+<text class="ch" x="710" y="26">A APURACAO DO MES</text>
+<text class="ch" x="970" y="26">O REGISTRO FINAL</text>
+<line class="rl" x1="20" y1="38" x2="1240" y2="38"/>
+<rect class="fx la" x="20" y="52" width="1220" height="190" rx="11"/>
+<text class="fxt la-t" x="38" y="76">CHECKOUT</text>
+<text class="fxs" x="126" y="76">o aluno paga o curso — a Tarvo ganha MDR e antecipacao</text>
+<rect class="cx" x="30" y="90" width="170" height="128" rx="7"/>
+<text class="bt" x="44" y="115">Aluno paga</text>
+<text class="bd" x="44" y="135">cartao de credito, debito ou Pix</text>
+<text class="bd" x="44" y="150">na agencia de intercambio</text>
+<text class="bd" x="44" y="165">~2.000 transacoes por mes</text>
+<rect class="cx" x="240" y="90" width="180" height="128" rx="7"/>
+<text class="bt" x="254" y="115">Orbe processa</text>
+<text class="bd" x="254" y="135">aplica a taxa por estabelecimento</text>
+<text class="bd" x="254" y="150">credita o liquido em TED no Aurora</text>
+<text class="bd" x="254" y="165">antecipa recebivel a 2,10%</text>
+<rect class="cx" x="460" y="90" width="210" height="128" rx="7"/>
+<text class="bt" x="474" y="115">CSV do portal</text>
+<text class="bd" x="474" y="135">1.943 linhas: venda, estorno,</text>
+<text class="bd" x="474" y="150">antecipacao e reversao</text>
+<text class="bd" x="474" y="165">sem CNPJ — so cod_estabelecimento</text>
+<text class="bd" x="474" y="180">31 grafias para 22 lojistas</text>
+<circle class="mk" cx="653" cy="106" r="11.5"/>
+<text class="mkt" x="653" y="110.5">1</text>
+<rect class="cx" x="710" y="90" width="220" height="128" rx="7"/>
+<text class="bt" x="724" y="115">Apuracao</text>
+<text class="bd" x="724" y="135">atribuir cada EC a um lojista</text>
+<text class="bd" x="724" y="150">somar valor_taxa com sinal</text>
+<text class="bd" x="724" y="165">conferir taxa aplicada x contratada</text>
+<text class="bd" x="724" y="180">hoje: a olho, contra a planilha</text>
+<circle class="mk" cx="913" cy="106" r="11.5"/>
+<text class="mkt" x="913" y="110.5">3</text>
+<rect class="cx cx-ok" x="970" y="90" width="250" height="128" rx="7"/>
+<text class="bt" x="984" y="115">Registro</text>
+<text class="bd" x="984" y="135">3.1.01 MDR  ·  3.1.02 antecipacao</text>
+<text class="bd" x="984" y="150">NF de servico por lojista</text>
+<text class="bd" x="984" y="165">repasse do liquido via Aurora</text>
+<text class="bd" x="984" y="180">R$ 231.880,36 em set/2026</text>
+<circle class="mk" cx="1203" cy="106" r="11.5"/>
+<text class="mkt" x="1203" y="110.5">7</text>
+<line class="fl" x1="205" y1="154.0" x2="231" y2="154.0" marker-end="url(#pt)"/>
+<line class="fl" x1="425" y1="154.0" x2="451" y2="154.0" marker-end="url(#pt)"/>
+<line class="fl" x1="675" y1="154.0" x2="701" y2="154.0" marker-end="url(#pt)"/>
+<line class="fl" x1="935" y1="154.0" x2="961" y2="154.0" marker-end="url(#pt)"/>
+<rect class="fx lb" x="20" y="256" width="1220" height="190" rx="11"/>
+<text class="fxt lb-t" x="38" y="280">REMESSA</text>
+<text class="fxs" x="115" y="280">o lojista paga a escola no exterior — a Tarvo ganha metade do spread</text>
+<rect class="cx" x="30" y="294" width="170" height="128" rx="7"/>
+<text class="bt" x="44" y="319">Lojista envia R$</text>
+<text class="bd" x="44" y="339">Pix para a conta Meridiano</text>
+<text class="bd" x="44" y="354">para pagar escola no exterior</text>
+<text class="bd" x="44" y="369">~230 operacoes por mes</text>
+<rect class="cx" x="240" y="294" width="180" height="128" rx="7"/>
+<text class="bt" x="254" y="319">Ponte Cambio fecha</text>
+<text class="bd" x="254" y="339">spread sobre a PTAX do dia</text>
+<text class="bd" x="254" y="354">IOF e status de compliance</text>
+<text class="bd" x="254" y="369">Tarvo fica com 50% do spread</text>
+<rect class="cx" x="460" y="294" width="210" height="128" rx="7"/>
+<text class="bt" x="474" y="319">XLSX por e-mail</text>
+<text class="bd" x="474" y="339">233 linhas + rodape do parceiro</text>
+<text class="bd" x="474" y="354">1 operacao duplicada</text>
+<text class="bd" x="474" y="369">4 com spread negativo</text>
+<text class="bd" x="474" y="384">coluna &#x27;estimado&#x27; ao lado da realizada</text>
+<circle class="mk" cx="653" cy="310" r="11.5"/>
+<text class="mkt" x="653" y="314.5">4</text>
+<rect class="cx" x="710" y="294" width="220" height="128" rx="7"/>
+<text class="bt" x="724" y="319">Apuracao</text>
+<text class="bd" x="724" y="339">deduplicar por N da operacao</text>
+<text class="bd" x="724" y="354">aplicar os 50% sobre o realizado</text>
+<text class="bd" x="724" y="369">conferir spread x contratado</text>
+<text class="bd" x="724" y="384">a regra dos 50% so existe no e-mail</text>
+<circle class="mk" cx="886" cy="310" r="11.5"/>
+<text class="mkt" x="886" y="314.5">3</text>
+<rect class="cx cx-ok" x="970" y="294" width="250" height="128" rx="7"/>
+<text class="bt" x="984" y="319">Registro</text>
+<text class="bd" x="984" y="339">3.1.03 intermediacao de cambio</text>
+<text class="bd" x="984" y="354">NF contra a Ponte destrava o</text>
+<text class="bd" x="984" y="369">repasse de 06/10</text>
+<text class="bd" x="984" y="384">R$ 38.625,83 em set/2026</text>
+<circle class="mk" cx="1203" cy="310" r="11.5"/>
+<text class="mkt" x="1203" y="314.5">5</text>
+<line class="fl" x1="205" y1="358.0" x2="231" y2="358.0" marker-end="url(#pt)"/>
+<line class="fl" x1="425" y1="358.0" x2="451" y2="358.0" marker-end="url(#pt)"/>
+<line class="fl" x1="675" y1="358.0" x2="701" y2="358.0" marker-end="url(#pt)"/>
+<line class="fl" x1="935" y1="358.0" x2="961" y2="358.0" marker-end="url(#pt)"/>
+<rect class="fx lc" x="20" y="460" width="1220" height="174" rx="11"/>
+<text class="fxt lc-t" x="38" y="484">CAIXA E CONTABILIDADE</text>
+<text class="fxs" x="269" y="484">onde o dinheiro de verdade entra, sai e vira lancamento</text>
+<text class="vz" x="44" y="558">as duas linhas</text>
+<text class="vz" x="44" y="574">desaguam aqui</text>
+<rect class="cx" x="240" y="498" width="180" height="112" rx="7"/>
+<text class="bt" x="254" y="523">Banco Aurora</text>
+<text class="bd" x="254" y="543">recebe a Orbe, paga os lojistas,</text>
+<text class="bd" x="254" y="558">folha e tributos</text>
+<text class="bd" x="254" y="573">CSV: nome truncado em 26 caracteres</text>
+<rect class="cx" x="460" y="498" width="210" height="112" rx="7"/>
+<text class="bt" x="474" y="523">Banco Meridiano</text>
+<text class="bd" x="474" y="543">recebe lojistas, envia a Ponte,</text>
+<text class="bd" x="474" y="558">aplicacao automatica em CDB</text>
+<text class="bd" x="474" y="573">OFX: nome so dentro do MEMO</text>
+<circle class="mk" cx="653" cy="514" r="11.5"/>
+<text class="mkt" x="653" y="518.5">6</text>
+<rect class="cx" x="710" y="498" width="220" height="112" rx="7"/>
+<text class="bt" x="724" y="523">Conciliacao</text>
+<text class="bd" x="724" y="543">184 lancamentos conferidos a mao</text>
+<text class="bd" x="724" y="558">credito sem identificacao, devolucao</text>
+<text class="bd" x="724" y="573">e transferencia que nao chegou</text>
+<rect class="cx cx-ok" x="970" y="498" width="250" height="112" rx="7"/>
+<text class="bt" x="984" y="523">Plano de contas</text>
+<text class="bd" x="984" y="543">ERP Fenix · 30 contas analiticas</text>
+<text class="bd" x="984" y="558">classificacao refeita todo mes</text>
+<text class="bd" x="984" y="573">nenhum lancamento aponta para a origem</text>
+<circle class="mk" cx="1176" cy="514" r="11.5"/>
+<text class="mkt" x="1176" y="518.5">7</text>
+<line class="fl" x1="425" y1="554.0" x2="451" y2="554.0" marker-end="url(#pt)"/>
+<line class="fl" x1="675" y1="554.0" x2="701" y2="554.0" marker-end="url(#pt)"/>
+<line class="fl" x1="935" y1="554.0" x2="961" y2="554.0" marker-end="url(#pt)"/>
+<rect class="sp" x="20" y="662" width="1220" height="112" rx="11"/>
+<circle class="mk" cx="46" cy="686" r="11.5"/>
+<text class="mkt" x="46" y="690.5">2</text>
+<text class="spt" x="68" y="691">A PLANILHA DE TAXAS — a unica ponte entre tudo isso, mantida a mao</text>
+<text class="spa" x="68" y="720">23 lojistas, 3 formatos de CNPJ</text>
+<text class="spb" x="68" y="738">dois com o zero a esquerda faltando</text>
+<text class="spa" x="360" y="720">4 linhas com o EC Orbe em branco</text>
+<text class="spb" x="360" y="738">a Atlas nem esta na aba vigente</text>
+<text class="spa" x="652" y="720">vigencia que vira no meio do mes</text>
+<text class="spb" x="652" y="738">Bridge: 2,59% ate 14/09, 2,19% depois</text>
+<text class="spa" x="944" y="720">taxas ora numero, ora texto</text>
+<text class="spb" x="944" y="738">e uma aba antiga marcada &#x27;nao usar&#x27;</text>
+<text class="spc" x="68" y="761">Se a Bia sai de ferias, o mes nao fecha: o de-para entre o relatorio da Orbe e o lojista real so existe aqui e na cabeca dela.</text>
+<line class="up" x1="750" y1="658" x2="750" y2="619" marker-end="url(#ptu)"/>
+<line class="up" x1="860" y1="658" x2="860" y2="619" marker-end="url(#ptu)"/>
+<line class="up" x1="560" y1="658" x2="560" y2="619" marker-end="url(#ptu)"/>
+</svg></div>
+<div class="leg">
+  <span><i class="i1"></i>sistema de origem ou parceiro</span>
+  <span><i class="i2"></i>onde a Tarvo ganha e registra</span>
+  <span><i class="i3"></i>gargalo (numerado abaixo)</span>
+  <span><i class="i4"></i>a planilha que sustenta tudo</span>
+</div>
+
+<h2>Os sete gargalos</h2>
+<p class="sub">Na ordem do fluxo, com o valor em jogo em setembro e quem precisa decidir.</p>
+<div class="grade"><article class="g">
+  <div class="g-h"><span class="g-n">1</span><h3>A Orbe nao manda CNPJ</h3></div>
+  <p>O relatorio so traz <code>cod_estabelecimento</code>. Quatro codigos nao existem na planilha de taxas: Atlas, Kiwi e duas Horizonte de nome parecido e taxas diferentes.</p>
+  <div class="g-f"><span class="g-v">R$ 35.369</span><span class="g-l">de comissao sem dono certo</span>
+  <span class="g-d">Financeiro + Comercial</span></div>
+</article>
+<article class="g">
+  <div class="g-h"><span class="g-n">2</span><h3>A planilha e a unica ponte, e e feita a mao</h3></div>
+  <p>CNPJ em tres formatos, EC em branco, taxa ora numero ora texto, vigencia que vira no meio do mes. Tudo o que falta ali vira decisao de cabeca.</p>
+  <div class="g-f"><span class="g-v">raiz</span><span class="g-l">dos outros seis gargalos</span>
+  <span class="g-d">Comercial</span></div>
+</article>
+<article class="g">
+  <div class="g-h"><span class="g-n">3</span><h3>Ninguem compara taxa contratada com taxa aplicada</h3></div>
+  <p>A Orbe cobra 0,50 p.p. a mais da Rota Global em 87 de 87 transacoes de credito. A Ponte aplica 1,5% na Mundo Aberto, que renegociou 1,2% em julho. Nenhum dos dois e erro pontual.</p>
+  <div class="g-f"><span class="g-v">R$ 2.995</span><span class="g-l">por mes, a devolver</span>
+  <span class="g-d">Comercial + parceiros</span></div>
+</article>
+<article class="g">
+  <div class="g-h"><span class="g-n">4</span><h3>O relatorio da Ponte nao pode ser somado como vem</h3></div>
+  <p>Uma operacao repetida que o rodape do proprio parceiro ja conta, quatro com spread negativo e uma coluna de spread estimado ao lado da realizada.</p>
+  <div class="g-f"><span class="g-v">R$ 2.249</span><span class="g-l">entre erro e disputa</span>
+  <span class="g-d">Ponte Cambio</span></div>
+</article>
+<article class="g">
+  <div class="g-h"><span class="g-n">5</span><h3>Competencia quebrada nas duas pontas</h3></div>
+  <p>R$ 61.884 de comissao de agosto entram no extrato de setembro. A receita de setembro so vira caixa em 06/10, e depende de uma NF que ainda nao foi emitida.</p>
+  <div class="g-f"><span class="g-v">R$ 1.039</span><span class="g-l">de receita na virada do mes</span>
+  <span class="g-d">Contabilidade</span></div>
+</article>
+<article class="g">
+  <div class="g-h"><span class="g-n">6</span><h3>Os extratos so tem nome truncado</h3></div>
+  <p>Aurora corta em 26 caracteres e corrompe acento; Meridiano esconde o nome dentro do MEMO. 'PIX RECEB PONTE A' e a Ponte Aerea, lojista, e nao a Ponte Cambio, parceiro.</p>
+  <div class="g-f"><span class="g-v">184</span><span class="g-l">lancamentos conferidos a mao</span>
+  <span class="g-d">Financeiro</span></div>
+</article>
+<article class="g">
+  <div class="g-h"><span class="g-n">7</span><h3>Nenhum numero aponta para a origem</h3></div>
+  <p>A comissao sai pronta da planilha. Quando o lojista contesta, a analista refaz a conta do zero — foi assim que a cobranca a maior do mes passado so apareceu porque ele reclamou.</p>
+  <div class="g-f"><span class="g-v">8 dias</span><span class="g-l">uteis de fechamento</span>
+  <span class="g-d">Financeiro</span></div>
+</article></div>
+
+<footer>
+  Numeros apurados a partir dos seis arquivos do data pack de 09/2026 e conferidos contra as linhas de
+  origem: <b>1.943</b> linhas da Orbe, <b>233</b> do relatorio da Ponte Cambio, <b>84</b> do extrato Aurora e
+  <b>100</b> do OFX Meridiano. Toda cifra desta pagina sai de <b>rastro.csv</b> e soma com as linhas que a compoem.
+</footer>
+</div>
