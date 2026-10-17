@@ -32,7 +32,7 @@ python3 fechar.py --entrada "./entrada/2026-10" --competencia 2026-10
 | `notas_a_emitir.csv` | 21 |
 | `lancamentos_classificados.csv` | 184, 100% com conta, todos por regra |
 | `pendencias.csv` | 31 |
-| `rastro.csv` | 4.626 |
+| `rastro.csv` | 5.389 |
 
 Mais `contestacoes/`: três rascunhos de e-mail por contraparte, com as operações em anexo,
 para o financeiro revisar e enviar.
@@ -89,6 +89,12 @@ Antes de gravar, o programa verifica:
 3. Comissão de remessa == soma das parcelas por operação.
 4. Todo EC da Orbe está resolvido **ou** tem pendência aberta.
 5. Toda operação da Ponte aparece uma vez na saída ou em `pendencias.csv`.
+6. Toda pendência com valor também fecha com o rastro.
+
+E, por fora do motor, `python3 testes/auditoria_rastro.py` refaz a conferência **sem
+importar nada de `src/`**: relê os CSVs gravados e os arquivos crus com parsing próprio,
+confere que toda referência existe na fonte citada, que toda soma fecha, e refaz uma
+amostra sorteada a partir da linha crua. Foi ele que encontrou as pendências sem rastro.
 
 **Se qualquer uma falhar, nada é gravado.** Total que não fecha é pior que total que falta.
 Para inspecionar mesmo assim: `--forcar`.

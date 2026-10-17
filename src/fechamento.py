@@ -24,13 +24,26 @@ class Fechamento:
         self.rastro.append(dict(id_saida=id_saida, arquivo_origem=arquivo,
                                 ref_origem=ref, valor=C.n2(valor)))
 
-    def _p(self, tipo, ref, valor, motivo, quem, arquivo=None):
+    def _p(self, tipo, ref, valor, motivo, quem, arquivo=None, linhas=None):
+        """Toda pendencia com valor tem de decompor em linhas de origem, igual a
+        qualquer outro numero da saida. `linhas` = [(arquivo_origem, ref_origem, valor)]."""
         self._npend += 1
         i = f"PEN-{self._npend:03d}"
         self.pend.append(dict(id_saida=i, tipo=tipo, ref_origem=ref,
                               valor_brl=C.n2(valor), motivo=motivo, quem_decide=quem))
-        if arquivo: self._r(i, arquivo, ref, valor)
+        if linhas:
+            for arq, rf, v in linhas: self._r(i, arq, rf, v)
+        elif arquivo:
+            self._r(i, arquivo, ref, valor)
         return i
+
+    def _arq_de(self, ref):
+        for t in self.orbe:
+            if t["ref_origem"] == ref: return t["arquivo_origem"]
+        return ""
+
+    def meta_ponte_arq(self):
+        return self.ponte[0]["arquivo_origem"] if self.ponte else ""
 
     def _na_competencia(self, d):
         return bool(d) and d.year == self.ano and d.month == self.mes
@@ -124,12 +137,16 @@ class Fechamento:
                         f"{g['n']} linhas mas nao tem taxa vigente na planilha. Comissao sai ZERADA e "
                         f"sem nota ate o comercial confirmar o contrato; a Orbe ja cobrou "
                         f"R$ {cobrado:,.2f} do lojista. O repasse do liquido segue normal",
-                        "Comercial Tarvo")
+                        "Comercial Tarvo",
+                        linhas=[(x["arquivo_origem"], x["ref_origem"], x["valor_taxa"] or 0)
+                                for x in g["linhas"]])
             if self.cad.confianca_do_ec(ec) < 1.0:
                 self._p("IDENTIDADE_LOJISTA", "|".join(sorted(g["ecs"])), total,
                         f"EC {ec} resolvido por premissa ({self.cad.origem_do_ec(ec)}, "
                         f"confianca {self.cad.confianca_do_ec(ec)}) - confirmar antes de faturar",
-                        "Financeiro Tarvo")
+                        "Financeiro Tarvo",
+                        linhas=[(x["arquivo_origem"], x["ref_origem"], x["_comissao"] or 0)
+                                for x in g["linhas"]])
         self.cms_checkout = linhas
         self._alertas_checkout()
         return linhas
@@ -166,14 +183,18 @@ class Fechamento:
                             f"({', '.join(t['id_transacao'] for t in revs)}), e o antecipado liquido "
                             f"no fim do mes fica em R$ {liq:,.2f}. O alerta e pelo PICO, nao pelo "
                             f"saldo: o risco existiu quando o dinheiro foi adiantado.")
-            self._p("ANTECIPACAO_SEM_LASTRO", f"EC {ec}", C.n2(g["ant"] - g["ven"]),
+            ants = [t for t in self.orbe if t["ec"] == ec and t["tipo"] == "ANTECIPACAO"]
+            self._p("ANTECIPACAO_SEM_LASTRO", f"EC {ec}", C.n2(g["ant"]),
                     f"{g['nome']} nao tem venda anterior a esta competencia e antecipou "
                     f"R$ {g['ant']:,.2f} contra R$ {g['ven']:,.2f} vendidos no mes. Lojista novo "
                     f"antecipando acima do que vendeu. Criterio nosso (ver HIPOTESES.md): o alerta "
                     f"so acende para quem nao tem agenda anterior, porque a antecipacao e sobre a "
                     f"agenda inteira e comparar com as vendas do mes acenderia lojista demais."
+                    + f" Excedente sobre as vendas do mes: R$ {g['ant'] - g['ven']:,.2f}."
                     + nota_rev,
-                    "Financeiro Tarvo + Comercial Tarvo")
+                    "Financeiro Tarvo + Comercial Tarvo",
+                    linhas=[(t["arquivo_origem"], t["ref_origem"], t["valor_bruto"] or 0)
+                            for t in ants])
 
     # ---------- 2. DIVERGENCIAS E DEVOLUCOES DE CHECKOUT ----------
     def divergencias_checkout(self):
@@ -234,7 +255,9 @@ class Fechamento:
                     f"{len(ds)} de {total_tx} transacoes (liquido de estornos). "
                     + ("Padrao sistemico - tabela desatualizada na Orbe. " if sistemico else "")
                     + "Contestar com a Orbe e ressarcir o lojista. Rascunho em contestacoes/",
-                    "Financeiro Tarvo + Parceiro Orbe")
+                    "Financeiro Tarvo + Parceiro Orbe",
+                    linhas=[(self._arq_de(d["ref_origem"]), d["ref_origem"], d["diferenca_brl"])
+                            for d in ds])
         por_dev = defaultdict(list)
         for d in dev: por_dev[d["cnpj"]].append(d)
         for cnpj, ds in por_dev.items():
@@ -244,16 +267,19 @@ class Fechamento:
                     f"nao informada a Orbe, que cobrou pela tabela em {len(ds)} transacoes. "
                     f"NAO ha o que cobrar da Orbe: a devolucao sai da Tarvo. Detalhe por transacao "
                     f"em devolucoes_lojista.csv e no rastro",
-                    "Financeiro Tarvo + Comercial Tarvo")
+                    "Financeiro Tarvo + Comercial Tarvo",
+                    linhas=[(self._arq_de(d["ref_origem"]), d["ref_origem"], d["valor_brl"])
+                            for d in ds])
         self.div_checkout, self.devolucoes = div, dev
         return div
 
     # ---------- 3. REMESSA ----------
     def remessa(self):
-        vistos, ops = set(), []
+        vistos, ops, descartadas, neg_fora = set(), [], [], []
         self.spread_neg = []
         for o in self.ponte:
             if C.DEDUP_PONTE and o["operacao"] in vistos:
+                descartadas.append(o)
                 self._p("OPERACAO_DUPLICADA", o["operacao"], C.n2(o["spread_brl"] * C.PARTICIPACAO_SPREAD),
                         f"operacao repetida no relatorio da Ponte (obs: {o['obs']}). "
                         f"Mantida uma vez. O rodape do parceiro conta as duas",
@@ -279,6 +305,7 @@ class Fechamento:
                         f"Para a contestacao com a Ponte: o que aconteceu foi R$ {o['spread_brl']:,.2f}; "
                         f"o que se pede de volta e a diferenca ate o contrato, R$ {ate_contrato:,.2f}",
                         "Financeiro Tarvo + Parceiro Ponte Cambio", o["arquivo_origem"])
+                neg_fora.append(o)
                 self.spread_neg.append(dict(operacao=o["operacao"], cnpj=o["cnpj"],
                     cliente=o["cliente"], data=C.iso(o["data_contratacao"]),
                     spread_realizado=C.n2(o["spread_brl"]), spread_pct=o["spread_pct"],
@@ -293,15 +320,23 @@ class Fechamento:
                     C.n2(sum(o["spread_brl"] for o in fora) * C.PARTICIPACAO_SPREAD),
                     f"{len(fora)} operacoes contratadas na competencia e liquidadas no mes seguinte. "
                     f"Receita reconhecida aqui, caixa so no mes seguinte",
-                    "Contabilidade")
+                    "Contabilidade",
+                    linhas=[(o["arquivo_origem"], o["ref_origem"],
+                             C.n2(o["spread_brl"] * C.PARTICIPACAO_SPREAD)) for o in fora])
         # confronto com o rodape do parceiro
         rod = self.meta_ponte.get("rodape", {}).get("spread")
         soma = sum(o["spread_brl"] for o in ops)
         if rod and abs(rod - soma) > 0.01:
             self._p("DIVERGENCIA_COM_PARCEIRO", "rodape do relatorio Ponte", C.n2(rod - soma),
                     f"rodape do parceiro diz R$ {rod:,.2f} de spread; apurado R$ {soma:,.2f} "
-                    f"apos deduplicacao e competencia. Responder o e-mail em ate 5 dias uteis",
-                    "Financeiro Tarvo + Parceiro Ponte Cambio")
+                    f"apos deduplicacao e competencia. A diferenca tem duas partes: a operacao "
+                    f"duplicada que o rodape conta duas vezes, e as operacoes de spread negativo "
+                    f"que tiramos da nossa participacao. Responder o e-mail em ate 5 dias uteis",
+                    "Financeiro Tarvo + Parceiro Ponte Cambio",
+                    linhas=([(d["arquivo_origem"], d["ref_origem"], d["spread_brl"])
+                             for d in descartadas]
+                            + [(d["arquivo_origem"], d["ref_origem"], d["spread_brl"])
+                               for d in neg_fora]))
         # A parcela de cada operacao e arredondada em centavos ANTES de somar: e assim que
         # o valor e faturado, e e o que mantem o rastro batendo com o total reportado.
         for o in ops:
@@ -348,7 +383,9 @@ class Fechamento:
             self._p("SPREAD_PADRAO_ASSUMIDO", cnpj, vol,
                     f"{self.cad.nome.get(cnpj, cnpj)} esta com 'Spread remessa' em branco na planilha. "
                     f"Premissa Q4: padrao = {C.SPREAD_PADRAO_PCT}%. Confirmar",
-                    "Comercial Tarvo")
+                    "Comercial Tarvo",
+                    linhas=[(o["arquivo_origem"], o["ref_origem"], o["spread_brl"])
+                            for o in ops if o["cnpj"] == cnpj])
         por_loj = defaultdict(list)
         for d in divs: por_loj[d["cnpj"]].append(d)
         for cnpj, ds in por_loj.items():
@@ -359,7 +396,9 @@ class Fechamento:
                         f"{len(ds)} operacoes. A condicao esta registrada na planilha, entao e divergencia "
                         f"de contrato: contestar com a Ponte e ressarcir o lojista. "
                         f"Rascunho em contestacoes/",
-                        "Financeiro Tarvo + Parceiro Ponte Cambio")
+                        "Financeiro Tarvo + Parceiro Ponte Cambio",
+                        linhas=[(self.meta_ponte_arq(), d["ref_origem"], d["diferenca_brl"])
+                                for d in ds])
         self.cms_remessa, self.div_remessa, self.ops_remessa = linhas, divs, ops
         return linhas, divs
 
@@ -382,11 +421,11 @@ class Fechamento:
             if cl["conta"] == "1.1.09.002":
                 self._p("CREDITO_NAO_IDENTIFICADO", lanc["ref_origem"], lanc["valor"],
                         f"'{lanc['descricao']}' - origem desconhecida. Identificar o pagador antes de baixar",
-                        "Financeiro Tarvo")
+                        "Financeiro Tarvo", lanc["arquivo_origem"])
             if "DEVOLUCAO" in (lanc["descricao"] or "").upper():
                 self._p("REPASSE_DEVOLVIDO", lanc["ref_origem"], lanc["valor"],
                         f"'{lanc['descricao']}' - repasse voltou. Reenviar ou abater do proximo repasse?",
-                        "Financeiro Tarvo")
+                        "Financeiro Tarvo", lanc["arquivo_origem"])
         self._conciliar_transferencias()
         self.lcts = out
         return out
@@ -415,7 +454,9 @@ class Fechamento:
             if c["comissao_brl"] <= 0:
                 self._p("COMISSAO_NEGATIVA", c["id_saida"], c["comissao_brl"],
                         f"{c['lojista']} fechou o mes com comissao nao positiva (estornos > vendas). "
-                        f"Nao emite NF - avaliar nota de credito (Q14)", "Financeiro Tarvo")
+                        f"Nao emite NF - avaliar nota de credito (Q14)", "Financeiro Tarvo",
+                        linhas=[(x["arquivo_origem"], x["ref_origem"], x["valor"])
+                                for x in self.rastro if x["id_saida"] == c["id_saida"]])
                 continue
             if not c["cnpj"]:
                 self._p("NF_SEM_TOMADOR", c["id_saida"], c["comissao_brl"],
@@ -445,7 +486,9 @@ class Fechamento:
             self._p("TOMADOR_DA_NF_DE_CAMBIO", idx, total,
                     "NF de intermediacao emitida contra a Ponte Cambio (premissa Q12, baseada no e-mail: "
                     "repasse 'mediante recebimento da nota fiscal de intermediacao'). "
-                    "Se o tomador correto for cada lojista, trocar TOMADOR_NF_REMESSA", "Financeiro Tarvo")
+                    "Se o tomador correto for cada lojista, trocar TOMADOR_NF_REMESSA", "Financeiro Tarvo",
+                    linhas=[(x["arquivo_origem"], x["ref_origem"], x["valor"])
+                            for x in self.rastro if x["id_saida"] == idx])
         else:
             for c in self.cms_remessa:
                 if c["comissao_brl"] <= 0: continue

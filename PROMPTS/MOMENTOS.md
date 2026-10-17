@@ -75,3 +75,30 @@ justamente porque a Helena disse "prefiro que a solução avise a que quebre sem
 perceber". A validação olhava se os arquivos esperados estavam lá — não se tinha chegado
 um a mais. Fonte que some e fonte que se multiplica são o mesmo risco, e só tínhamos
 coberto metade dele.
+
+---
+
+## 5. A auditoria independente achou o que o autoteste não via
+
+**O que pedi:** um auditor que conferisse o rastro **sem importar nada de `src/`** —
+relendo os CSVs gravados e os arquivos crus, com parsing próprio. A ideia era não
+deixar o fechamento se corrigir sozinho.
+
+**O que ele devolveu:** 15 `id_saida` com valor e **zero** linhas de rastro. Todas
+pendências. O autoteste do próprio motor conferia cinco arquivos — comissões,
+divergências, devoluções, notas e lançamentos — e nunca o `pendencias.csv`. Mas a regra
+central do case não tem exceção: *"todo número da saída aponta para a linha de origem"*,
+e uma pendência de R$ 15.396,77 é um número da saída.
+
+**O que fizemos com isso:** toda pendência com valor passou a decompor em linhas de
+origem. Duas precisaram mudar de número para poder decompor: o alerta de antecipação
+passou a reportar o antecipado bruto (R$ 235.943,10, que soma as antecipações) em vez do
+excedente sobre as vendas (um número derivado, que não soma nada), com o excedente no
+motivo; e a divergência contra o rodapé da Ponte passou a apontar para as duas coisas que
+a compõem — a operação duplicada e os quatro spreads negativos.
+
+E o autoteste do motor ganhou a sexta conferência, para não depender de alguém lembrar
+de rodar o auditor. O rastro foi de 4.626 para 5.389 linhas.
+
+Se o auditor tivesse sido escrito importando `src/`, ele teria passado. A independência
+era a coisa toda.

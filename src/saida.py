@@ -57,6 +57,10 @@ def autoteste(f):
     confere("devolucoes", f.devolucoes, "valor_brl")
     confere("notas", f.nfs, "valor_brl")
     confere("lancamentos", f.lcts, "valor")
+    # A auditoria independente (testes/auditoria_rastro.py) descobriu que as pendencias
+    # com valor ficavam de fora desta conferencia. O invariante vale para TODO numero
+    # da saida, nao so para os cinco arquivos principais.
+    confere("pendencias", [p for p in f.pend if abs(p["valor_brl"]) > 0.005], "valor_brl")
 
     # fechamento contra a origem
     t_linha = C.n2(sum(t["_comissao"] for t in f.orbe if t.get("_comissao") is not None))
