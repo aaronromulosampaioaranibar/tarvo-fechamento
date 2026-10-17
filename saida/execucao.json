@@ -1,12 +1,12 @@
 {
   "competencia": "2026-09",
-  "executado_em": "2026-10-17T19:53:27",
-  "duracao_s": 1.28,
+  "executado_em": "2026-10-17T17:01:12",
+  "duracao_s": 0.18,
   "provisorio": false,
   "bloqueios": {},
   "problemas_de_fonte": [],
-  "python": "3.10.12",
-  "plataforma": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+  "python": "3.14.6",
+  "plataforma": "Windows-11-10.0.26200-SP0",
   "parametros": {
     "tolerancia_taxa_pp": 0.01,
     "participacao_spread": 0.5,
@@ -23,56 +23,56 @@
       "bytes": 1614,
       "linhas": null,
       "sha256_16": "f34a127c2143691d",
-      "modificado": "2026-10-17T11:40:22"
+      "modificado": "2026-10-17T08:40:22"
     },
     {
       "arquivo": "01_orbe_relatorio_comissoes_set2026.csv",
       "bytes": 221518,
       "linhas": 1944,
       "sha256_16": "fdbc2bad2dd38dde",
-      "modificado": "2026-10-17T11:40:22"
+      "modificado": "2026-10-17T08:40:22"
     },
     {
       "arquivo": "02_tabela_taxas_contratadas.xlsx",
       "bytes": 10092,
       "linhas": null,
       "sha256_16": "d0c7d2b13ac41c2a",
-      "modificado": "2026-10-17T11:40:22"
+      "modificado": "2026-10-17T08:40:22"
     },
     {
       "arquivo": "03_email_ponte_cambio_relatorio_set2026.eml",
       "bytes": 42076,
       "linhas": null,
       "sha256_16": "e36808cab907df4b",
-      "modificado": "2026-10-17T15:15:11"
+      "modificado": "2026-10-17T12:15:11"
     },
     {
       "arquivo": "04_plano_de_contas_fenix_erp.csv",
       "bytes": 3205,
       "linhas": 53,
       "sha256_16": "fb99c63b151c2a02",
-      "modificado": "2026-10-17T11:40:22"
+      "modificado": "2026-10-17T08:40:22"
     },
     {
       "arquivo": "05a_extrato_banco_aurora_cc4471_set2026.csv",
       "bytes": 6896,
       "linhas": 95,
       "sha256_16": "7303b72fa76d227a",
-      "modificado": "2026-10-17T11:40:22"
+      "modificado": "2026-10-17T08:40:22"
     },
     {
       "arquivo": "05b_extrato_banco_meridiano_cc90233_set2026.ofx",
       "bytes": 18306,
       "linhas": 847,
       "sha256_16": "27f11fae20c1fb69",
-      "modificado": "2026-10-17T11:40:22"
+      "modificado": "2026-10-17T08:40:22"
     },
     {
       "arquivo": "06_orbe_ajustes_tardios_set2026.csv",
       "bytes": 2088,
       "linhas": 15,
       "sha256_16": "b1cfd183945fb194",
-      "modificado": "2026-10-17T16:13:38"
+      "modificado": "2026-10-17T13:13:38"
     }
   ],
   "linhas_lidas": {
