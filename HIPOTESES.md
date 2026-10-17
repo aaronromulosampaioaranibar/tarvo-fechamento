@@ -81,13 +81,18 @@ classifica seus 100 lançamentos sozinho. Nos três casos o rastro continua fech
 
 ---
 
-## C. Ainda premissa — nada bloqueia o fechamento
+## C. Ainda premissa — o que muda **para a Helena** se estiver errada
 
-| # | Premissa | O que muda se estiver errada |
+As premissas estão escritas pelo efeito no trabalho dela, não pelo efeito na nota.
+
+| # | Premissa | Se estiver errada, a Helena… |
 |---|---|---|
-| C1 | O ajuste de contestação da Ponte (linha nova, `Nº` próprio, spread negativo, obs `AJUSTE REF PC-…`) abate a participação do mês em que aparece, com rastro para a operação original. | Nada em setembro: o relatório não traz nenhum. Implementado para outubro em diante. |
-| C2 | Operação da Ponte de CNPJ que não está na planilha: calcula-se a participação mesmo assim (a Ponte paga e a nota tem de bater com o repasse) e abre-se pendência de cadastro. | Não aconteceu em setembro. A Helena chamou o tratamento de razoável. |
-| C3 | Lojista com comissão negativa não emite nota e o saldo não passa para o mês seguinte automaticamente; a Helena trata com o lojista. | Só a Casa do Estudante, com −R$ 5,50. |
+| **C1** | **CNPJ da Atlas = 39.566.044/0001-19** (aba de 2025, confirmado como "a mesma empresa" em 17/10 11h41) | …fatura a Atlas, quando o comercial liberar, contra um CNPJ que não é o do contrato. A nota sai para a empresa errada e precisa ser cancelada. É o único erro desta lista que chega ao cliente. |
+| **C2** | **A comissão da Atlas sai zerada, com as 57 transações no rastro**, em vez de ficar fora do arquivo | …não perde nada: o valor é zero nas duas formas. Mas se a linha sumisse, ela não teria como ver que existe volume parado esperando o comercial. Em outubro, quando a taxa for confirmada, é essa linha que mostra o que precisa ser faturado junto. |
+| **C3** | **A isenção da Casa vale por data da venda a partir de 01/09** (confirmado em 17/10 11h41) | …devolve R$ 5,50 a menos do que devia, e emite uma nota de R$ 0,00 que não deveria existir. Valor irrelevante; o que importa é a regra, porque a isenção vai até dezembro e o erro se repete em outubro, novembro e dezembro. |
+| **C4** | **O ajuste de contestação da Ponte** (linha nova, nº próprio, spread negativo, obs `AJUSTE REF PC-…`) abate a participação do mês em que aparece | …em setembro, nada: o relatório não traz nenhum. Em outubro, se a Ponte devolver a diferença da Mundo Aberto, o ajuste entra sozinho e ela vê o abatimento com rastro até a operação original, em vez de conferir à mão. |
+| **C5** | **Operação da Ponte de CNPJ fora da planilha**: calcula-se a participação mesmo assim e abre-se pendência de cadastro | …recebe o repasse da Ponte com um valor que a nota não cobre, se a gente tivesse ignorado a operação. Com a premissa, a nota bate com o repasse e o cadastro vira pendência do comercial. Não aconteceu em setembro. |
+| **C6** | **Alerta de antecipação pelo pico**, não pelo saldo do fim do mês | …não fica sabendo que a Atlas — lojista novo, sem contrato assinado — levou R$ 235.943,10 adiantados. Pelo saldo do fim do mês o caso desaparece, porque as reversões derrubam o líquido para baixo das vendas. |
 
 ---
 

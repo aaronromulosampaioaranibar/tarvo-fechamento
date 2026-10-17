@@ -39,6 +39,23 @@ para o financeiro revisar e enviar.
 
 Formato fixo: `;` como separador, `.` decimal, datas `AAAA-MM-DD`, CNPJ com 14 dígitos.
 
+## Prova de que roda do zero
+
+Clonando o repositório numa pasta limpa e rodando sem nenhum argumento, a saída sai
+**byte a byte idêntica** à versionada em `saida/`:
+
+```bash
+git clone https://github.com/aaronromulosampaioaranibar/tarvo-fechamento.git
+cd tarvo-fechamento
+python3 -m pip install -r requirements.txt
+python3 fechar.py
+diff -r saida/ ../tarvo-fechamento-original/saida/   # sem diferencas
+```
+
+Nada fora do repositório é necessário: nem chave de API, nem arquivo solto, nem
+configuração local. Os arquivos do mês estão em `entrada/2026-09/`, exatamente como o
+cliente os manda.
+
 ## Quando falta uma fonte
 
 O fechamento **não para**. `src/validacao.py` confere as seis fontes antes de ler qualquer
