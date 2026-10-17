@@ -91,7 +91,15 @@ Antes de gravar, o programa verifica:
 5. Toda operação da Ponte aparece uma vez na saída ou em `pendencias.csv`.
 6. Toda pendência com valor também fecha com o rastro.
 
-E, por fora do motor, `python3 testes/auditoria_rastro.py` refaz a conferência **sem
+Três scripts rodam por fora do motor:
+
+| | |
+|---|---|
+| `testes/conformidade_formato.py` | o formato fixo dos seis arquivos: separador, decimal, datas, CNPJ, domínios fechados, `ref_origem` por fonte, conta que aceita lançamento |
+| `testes/teste_fontes.py` | os três cenários de fonte ausente ou layout mudado |
+| `testes/auditoria_rastro.py` | o rastro, **sem importar nada de `src/`** |
+
+`auditoria_rastro.py` refaz a conferência **sem
 importar nada de `src/`**: relê os CSVs gravados e os arquivos crus com parsing próprio,
 confere que toda referência existe na fonte citada, que toda soma fecha, e refaz uma
 amostra sorteada a partir da linha crua. Foi ele que encontrou as pendências sem rastro.
