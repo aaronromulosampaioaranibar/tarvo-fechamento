@@ -24,7 +24,8 @@ Um fechamento que roda em **dois cliques**, na máquina dela, sem navegador e se
 internet. Ela larga os arquivos numa pasta, clica, e sai a apuração completa.
 
 Rodou agora, no Windows 11 de um de nós, em **0,18 segundo**. Nenhum arquivo sai
-do computador. Nenhuma chave de API no caminho padrão.
+do computador. Nenhuma chave de API no caminho padrão. E o mesmo repositório rodado no
+Linux produz saída **byte a byte idêntica** — o fechamento é reproduzível, não só correto.
 
 ## 3 · Setembro fechado (45s)
 
@@ -96,8 +97,12 @@ O motor detecta e bloqueia só a parte que depende dela: checkout não fecha, c�
 fecha, a saída vem marcada `[PROVISÓRIO]` e a pendência diz o que faltou.
 
 **"Como vocês sabem que o número está certo?"**
-Seis invariantes travam a gravação. Se qualquer uma falhar, nada é escrito. Mais o
-auditor independente, que refaz as contas sem olhar o código do motor.
+Seis invariantes travam a gravação: se qualquer uma falhar, nada é escrito. Mais o
+auditor independente, que refaz as contas sem olhar o código do motor. E mais uma prova
+que vocês podem repetir agora: clonem o repositório e rodem. Nós fizemos isso — Windows 11
+com Python 3.14 de um lado, Linux do outro — e **os sete arquivos de saída saem byte a byte
+idênticos, mesmo SHA-256**. O fechamento é determinístico entre máquinas e entre versões de
+Python. Não é "confie no número": é reproduza o número.
 
 **"Onde entra a IA de verdade?"**
 Na classificação contábil de linha bancária que não casa com nenhuma regra. Em
