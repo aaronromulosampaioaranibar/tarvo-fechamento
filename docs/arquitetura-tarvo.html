@@ -1,0 +1,293 @@
+<title>Arquitetura do fechamento</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@600;700&display=swap">
+<style>
+/* Fluxo da esquerda para a direita com dois portoes; o cadastro atravessa por baixo. */
+:root{
+  --papel:#f6f7f9; --carta:#ffffff; --tinta:#131821; --meio:#5c6675; --fraco:#8d97a6;
+  --risco:#dde2e9; --borda:#cbd3dd;
+  --sis:#2c4a7c; --rec:#0f6b5c; --gar:#a8322a; --raiz:#9a6412; --seta:#9aa5b4;
+  --d:'IBM Plex Serif',Georgia,serif;
+  --s:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+  --m:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --papel:#0f131a; --carta:#171d27; --tinta:#e6eaf0; --meio:#9aa5b4; --fraco:#6d7786;
+  --risco:#262e3a; --borda:#323c4a;
+  --sis:#8fb1e8; --rec:#4fc0a8; --gar:#f0847a; --raiz:#e0ad5c; --seta:#5a6575; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --papel:#0f131a; --carta:#171d27; --tinta:#e6eaf0; --meio:#9aa5b4; --fraco:#6d7786;
+  --risco:#262e3a; --borda:#323c4a;
+  --sis:#8fb1e8; --rec:#4fc0a8; --gar:#f0847a; --raiz:#e0ad5c; --seta:#5a6575; color-scheme:dark;}
+
+body{background:var(--papel);color:var(--tinta);font-family:var(--s);line-height:1.5;margin:0}
+.wrap{max-width:1340px;margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:28px 52px}
+header{border-bottom:2px solid var(--tinta);padding-bottom:16px;margin-bottom:20px}
+.eyebrow{font-family:var(--m);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--meio);margin:0 0 8px}
+h1{font-family:var(--d);font-weight:700;font-size:clamp(26px,4.6vw,40px);line-height:1.1;
+  margin:0 0 10px;text-wrap:balance;letter-spacing:-.015em}
+.lead{font-size:clamp(14px,2.1vw,16px);color:var(--meio);max-width:66ch;margin:0}
+.mapa{background:var(--carta);border:1px solid var(--borda);border-radius:10px;
+  overflow-x:auto;padding:14px;margin-bottom:10px}
+.mapa svg{display:block;min-width:1180px;height:auto}
+.leg{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:12px;color:var(--meio);margin-bottom:34px}
+.leg i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;
+  vertical-align:-1px;border:1px solid var(--borda)}
+.leg .i1{background:var(--carta);border-color:var(--borda)}
+.leg .i2{background:color-mix(in srgb,var(--sis) 10%,var(--carta));border-color:var(--sis)}
+.leg .i3{background:color-mix(in srgb,var(--rec) 10%,var(--carta));border-color:var(--rec)}
+.leg .i4{background:color-mix(in srgb,var(--raiz) 10%,var(--carta));border-color:var(--raiz)}
+h2{font-family:var(--d);font-size:clamp(19px,3vw,24px);margin:0 0 14px;letter-spacing:-.01em}
+.grade{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+.p{background:var(--carta);border:1px solid var(--borda);border-left:3px solid var(--sis);
+  border-radius:8px;padding:14px 15px;min-width:0}
+.p h3{font-size:14px;font-weight:600;margin:0 0 6px}
+.p p{font-size:13px;color:var(--meio);margin:0}
+.p code{font-family:var(--m);font-size:11.5px;background:var(--papel);padding:1px 4px;border-radius:3px}
+.p.g{border-left-color:var(--raiz)}
+.p.v{border-left-color:var(--rec)}
+footer{margin-top:30px;border-top:1px solid var(--risco);padding-top:14px;
+  font-size:12.5px;color:var(--fraco)}
+
+/* SVG */
+.ch{font-family:var(--m);font-size:10px;letter-spacing:.13em;fill:var(--fraco)}
+.rl{stroke:var(--risco);stroke-width:1}
+.cp{fill:var(--carta);stroke:var(--borda);stroke-width:1}
+.cp-ok{stroke:var(--rec)}
+.cp-pend{stroke:var(--gar);stroke-width:1.4}
+.cp-rastro{stroke:var(--raiz);stroke-width:1.4}
+.ct{font-family:var(--m);font-size:11.5px;font-weight:500;fill:var(--tinta)}
+.cs{font-family:var(--s);font-size:10.2px;fill:var(--fraco)}
+.bx{fill:var(--carta);stroke:var(--borda);stroke-width:1}
+.bx-gate{fill:color-mix(in srgb,var(--sis) 7%,var(--carta));stroke:var(--sis);stroke-width:1.3}
+.bx-chave{stroke:var(--rec);stroke-width:1.4}
+.bt{font-family:var(--m);font-size:12.5px;font-weight:600;fill:var(--tinta)}
+.bd{font-family:var(--s);font-size:10.6px;fill:var(--meio)}
+.nt{font-family:var(--s);font-size:10.5px;font-style:italic;fill:var(--fraco)}
+.fl{stroke:var(--seta);stroke-width:1.4;fill:none}
+.fl-fino{stroke-width:1}
+.sp{fill:color-mix(in srgb,var(--raiz) 9%,var(--carta));stroke:var(--raiz);stroke-width:1.3}
+.spt{font-family:var(--m);font-size:12px;font-weight:600;fill:var(--raiz)}
+.hm{fill:color-mix(in srgb,var(--gar) 7%,var(--carta));stroke:var(--gar);stroke-width:1.2}
+.hmt{font-family:var(--m);font-size:12px;font-weight:600;fill:var(--gar)}
+.tf{fill:none;stroke:var(--risco);stroke-width:1;stroke-dasharray:4 3}
+.tft{font-family:var(--m);font-size:12px;font-weight:600;letter-spacing:.06em;fill:var(--meio)}
+.tn{font-family:var(--m);font-size:11.5px;font-weight:600;fill:var(--tinta)}
+.up{stroke:var(--raiz);stroke-width:1.2;stroke-dasharray:3 3;fill:none;opacity:.85}
+.ft{font-family:var(--m);font-size:12px;font-weight:600;fill:var(--tinta)}
+.ft2{font-family:var(--s);font-size:11.5px;fill:var(--meio)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Time Prime &middot; case Tarvo &middot; competencia 09/2026</p>
+  <h1>Como a nossa solu&ccedil;&atilde;o est&aacute; montada</h1>
+  <p class="lead">Dos seis arquivos como o cliente manda at&eacute; os sete que a analista recebe.
+  Dois port&otilde;es no caminho: um confere se as fontes chegaram inteiras, o outro recusa a gravar
+  se algum total n&atilde;o fechar com as linhas de origem.</p>
+</header>
+
+<div class="mapa"><svg viewBox="0 0 1300 770" width="1300" role="img"
+ aria-label="Arquitetura da solucao de fechamento: seis arquivos de entrada passam por validacao, leitores, cadastro de identidade, motores de checkout e remessa, classificacao contabil e seis invariantes, e saem como sete arquivos mais os rascunhos de contestacao">
+<defs>
+ <marker id="p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+  <path d="M0,1 L9,5 L0,9 z" fill="var(--seta)"/></marker>
+ <marker id="pu" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+  <path d="M0,1 L9,5 L0,9 z" fill="var(--raiz)"/></marker>
+</defs>
+<text class="ch" x="24" y="25">O QUE O CLIENTE MANDA</text>
+<text class="ch" x="272" y="25">CONFERE</text>
+<text class="ch" x="466" y="25">APURA</text>
+<text class="ch" x="770" y="25">FECHA</text>
+<text class="ch" x="984" y="25">O QUE A ANALISTA RECEBE</text>
+<line class="rl" x1="24" y1="36" x2="1276" y2="36"/>
+<rect class="cp" x="24" y="58" width="212" height="40" rx="5"/>
+<text class="ct" x="35" y="75">01 orbe relatorio .csv</text>
+<text class="cs" x="35" y="89">1.943 linhas · CSV pt-BR</text>
+<rect class="cp" x="24" y="106" width="212" height="40" rx="5"/>
+<text class="ct" x="35" y="123">06 orbe ajustes .csv</text>
+<text class="cs" x="35" y="137">14 linhas · chegou as 13h</text>
+<rect class="cp" x="24" y="154" width="212" height="40" rx="5"/>
+<text class="ct" x="35" y="171">02 taxas contratadas .xlsx</text>
+<text class="cs" x="35" y="185">planilha feita a mao · 2 abas</text>
+<rect class="cp" x="24" y="202" width="212" height="40" rx="5"/>
+<text class="ct" x="35" y="219">03 ponte cambio .eml</text>
+<text class="cs" x="35" y="233">e-mail + anexo .xlsx</text>
+<rect class="cp" x="24" y="250" width="212" height="40" rx="5"/>
+<text class="ct" x="35" y="267">05a aurora .csv</text>
+<text class="cs" x="35" y="281">8 linhas de preambulo</text>
+<rect class="cp" x="24" y="298" width="212" height="40" rx="5"/>
+<text class="ct" x="35" y="315">05b meridiano .ofx</text>
+<text class="cs" x="35" y="329">OFX 1.0 SGML · cp1252</text>
+<rect class="cp" x="24" y="346" width="212" height="40" rx="5"/>
+<text class="ct" x="35" y="363">04 plano de contas .csv</text>
+<text class="cs" x="35" y="377">latin-1 · 30 contas analiticas</text>
+<text class="nt" x="24" y="402">achados por padrao de nome,</text>
+<text class="nt" x="24" y="416">nao por nome exato</text>
+<rect class="bx bx-gate" x="272" y="58" width="158" height="322" rx="7"/>
+<text class="bt" x="285" y="81">validacao.py</text>
+<text class="bd" x="285" y="99">o arquivo chegou?</text>
+<text class="bd" x="285" y="113">o layout e o do mes</text>
+<text class="bd" x="285" y="127">passado?</text>
+<text class="bd" x="285" y="141">ha dois candidatos</text>
+<text class="bd" x="285" y="155">ao mesmo padrao?</text>
+<text class="bd" x="285" y="169"></text>
+<text class="bd" x="285" y="183">FONTE OK</text>
+<text class="bd" x="285" y="197">-&gt; segue</text>
+<text class="bd" x="285" y="211"></text>
+<text class="bd" x="285" y="225">FONTE COM PROBLEMA</text>
+<text class="bd" x="285" y="239">-&gt; bloqueia so a parte</text>
+<text class="bd" x="285" y="253">   que depende dela</text>
+<text class="bd" x="285" y="267">-&gt; pendencia com</text>
+<text class="bd" x="285" y="281">   quem libera</text>
+<text class="bd" x="285" y="295">-&gt; saida [PROVISORIO]</text>
+<path class="fl fl-fino" d="M240,78 L264,78" marker-end="url(#p)"/>
+<path class="fl fl-fino" d="M240,126 L264,126" marker-end="url(#p)"/>
+<path class="fl fl-fino" d="M240,174 L264,174" marker-end="url(#p)"/>
+<path class="fl fl-fino" d="M240,222 L264,222" marker-end="url(#p)"/>
+<path class="fl fl-fino" d="M240,270 L264,270" marker-end="url(#p)"/>
+<path class="fl fl-fino" d="M240,318 L264,318" marker-end="url(#p)"/>
+<path class="fl fl-fino" d="M240,366 L264,366" marker-end="url(#p)"/>
+<rect class="bx" x="466" y="58" width="268" height="56" rx="7"/>
+<text class="bt" x="479" y="81">leitores.py</text>
+<text class="bd" x="479" y="99">um leitor por formato · toda linha ja sai com arquivo_origem + ref_origem</text>
+<rect class="bx bx-chave" x="466" y="126" width="268" height="72" rx="7"/>
+<text class="bt" x="479" y="149">identidade.py</text>
+<text class="bd" x="479" y="167">EC Orbe -&gt; CNPJ -&gt; nome truncado no extrato</text>
+<text class="bd" x="479" y="181">nome NUNCA e chave primaria: prefixo normalizado unico,</text>
+<text class="bd" x="479" y="195">empate ou ausencia viram pendencia</text>
+<rect class="bx" x="466" y="210" width="268" height="72" rx="7"/>
+<text class="bt" x="479" y="233">fechamento.py · CHECKOUT</text>
+<text class="bd" x="479" y="251">comissao = valor_bruto x taxa CONTRATADA, linha a linha</text>
+<text class="bd" x="479" y="265">divergencia de contrato  x  devolucao por concessao</text>
+<text class="bd" x="479" y="279">estorno pela taxa da venda original</text>
+<rect class="bx" x="466" y="294" width="268" height="58" rx="7"/>
+<text class="bt" x="479" y="317">fechamento.py · REMESSA</text>
+<text class="bd" x="479" y="335">dedup por N da operacao · 50% do spread realizado</text>
+<text class="bd" x="479" y="349">spread negativo fora · competencia por contratacao</text>
+<rect class="bx" x="466" y="364" width="268" height="72" rx="7"/>
+<text class="bt" x="479" y="387">classificacao.py</text>
+<text class="bd" x="479" y="405">extrato -&gt; conta analitica do plano Fenix</text>
+<text class="bd" x="479" y="419">REGRA 184/184 neste mes  ·  IA no residuo, com confianca</text>
+<text class="bd" x="479" y="433">abaixo de 0,95 -&gt; HUMANO e pendencia</text>
+<path class="fl" d="M600,114 L600,122" marker-end="url(#p)"/>
+<path class="fl" d="M600,198 L600,206" marker-end="url(#p)"/>
+<path class="fl" d="M600,282 L600,290" marker-end="url(#p)"/>
+<path class="fl" d="M600,352 L600,360" marker-end="url(#p)"/>
+<path class="fl" d="M436,86 L458,86" marker-end="url(#p)"/>
+<rect class="bx bx-gate" x="770" y="150" width="180" height="250" rx="7"/>
+<text class="bt" x="783" y="173">saida.py</text>
+<text class="bd" x="783" y="191">SEIS INVARIANTES</text>
+<text class="bd" x="783" y="205"></text>
+<text class="bd" x="783" y="219">1 todo id_saida fecha</text>
+<text class="bd" x="783" y="233">   com o rastro</text>
+<text class="bd" x="783" y="247">2 checkout = soma das</text>
+<text class="bd" x="783" y="261">   comissoes por linha</text>
+<text class="bd" x="783" y="275">3 remessa = soma das</text>
+<text class="bd" x="783" y="289">   parcelas por operacao</text>
+<text class="bd" x="783" y="303">4 todo EC resolvido ou</text>
+<text class="bd" x="783" y="317">   com pendencia</text>
+<text class="bd" x="783" y="331">5 toda operacao da Ponte</text>
+<text class="bd" x="783" y="345">   aparece uma vez</text>
+<text class="bd" x="783" y="359">6 toda pendencia com</text>
+<text class="bd" x="783" y="373">   valor fecha</text>
+<text class="bd" x="783" y="387"></text>
+<text class="bd" x="783" y="401">falhou -&gt; NAO GRAVA</text>
+<path class="fl" d="M738,240 H750.0 V275 H762" marker-end="url(#p)"/>
+<path class="fl" d="M738,324 H750.0 V275 H762" marker-end="url(#p)"/>
+<path class="fl" d="M738,398 H750.0 V275 H762" marker-end="url(#p)"/>
+<rect class="cp cp-ok" x="984" y="58" width="292" height="40" rx="5"/>
+<text class="ct" x="995" y="75">comissoes_por_lojista.csv</text>
+<text class="cs" x="995" y="89">36 linhas · R$ 243.278,79</text>
+<rect class="cp cp-ok" x="984" y="106" width="292" height="40" rx="5"/>
+<text class="ct" x="995" y="123">divergencias_taxa.csv</text>
+<text class="cs" x="995" y="137">115 · R$ 2.995,10 a cobrar</text>
+<rect class="cp cp-ok" x="984" y="154" width="292" height="40" rx="5"/>
+<text class="ct" x="995" y="171">devolucoes_lojista.csv</text>
+<text class="cs" x="995" y="185">118 · R$ 15.396,77 da Tarvo</text>
+<rect class="cp cp-ok" x="984" y="202" width="292" height="40" rx="5"/>
+<text class="ct" x="995" y="219">notas_a_emitir.csv</text>
+<text class="cs" x="995" y="233">21 notas</text>
+<rect class="cp cp-ok" x="984" y="250" width="292" height="40" rx="5"/>
+<text class="ct" x="995" y="267">lancamentos_classificados.csv</text>
+<text class="cs" x="995" y="281">184 · 100% com conta</text>
+<rect class="cp cp-pend" x="984" y="298" width="292" height="40" rx="5"/>
+<text class="ct" x="995" y="315">pendencias.csv</text>
+<text class="cs" x="995" y="329">31 · o que a analista le</text>
+<rect class="cp cp-rastro" x="984" y="346" width="292" height="40" rx="5"/>
+<text class="ct" x="995" y="363">rastro.csv</text>
+<text class="cs" x="995" y="377">5.389 linhas · 505 id_saida</text>
+<rect class="cp cp-ok" x="984" y="394" width="292" height="40" rx="5"/>
+<text class="ct" x="995" y="411">contestacoes/</text>
+<text class="cs" x="995" y="425">3 e-mails + anexos</text>
+<path class="fl" d="M956,275 L976,275" marker-end="url(#p)"/>
+<rect class="sp" x="466" y="462" width="268" height="86" rx="7"/>
+<text class="spt" x="479" y="482">cadastro/ — a regra sai da cabeca da analista</text>
+<text class="bd" x="479" y="500">de_para_ec.csv — os ECs que a planilha nao resolve</text>
+<text class="bd" x="479" y="514">condicoes_especiais.csv — o que o comercial fecha</text>
+<text class="bd" x="479" y="528">comum.py — toda premissa discutivel, uma linha cada</text>
+<text class="bd" x="479" y="542">versionado no git: quem mudou, quando e por que</text>
+<path class="up" d="M506,458 V202" marker-end="url(#pu)"/>
+<path class="up" d="M616,458 V286" marker-end="url(#pu)"/>
+<path class="up" d="M706,458 V440" marker-end="url(#pu)"/>
+<rect class="hm" x="24" y="462" width="406" height="86" rx="7"/>
+<text class="hmt" x="37" y="482">#tarvo-financeiro</text>
+<text class="bd" x="37" y="500">22 regras respondidas, com autor e horario</text>
+<text class="bd" x="37" y="514">9 decisoes delegadas, com o motivo escrito</text>
+<text class="bd" x="37" y="528">3 premissas abertas, pelo efeito na mesa dela</text>
+<text class="bd" x="37" y="542">HIPOTESES.md</text>
+<path class="fl" d="M436,505 L458,505" marker-end="url(#p)"/>
+<rect class="tf" x="24" y="598" width="1252" height="96" rx="7"/>
+<text class="tft" x="40" y="621">testes/ — rodam POR FORA do motor</text>
+<text class="tn" x="40" y="645">conformidade_formato.py</text>
+<text class="bd" x="40" y="661">separador, decimal, datas, CNPJ, dominios,</text>
+<text class="bd" x="40" y="675">ref_origem por fonte, conta que aceita lancamento</text>
+<text class="tn" x="452" y="645">teste_fontes.py</text>
+<text class="bd" x="452" y="661">tres cenarios: tudo no lugar, Ponte ausente,</text>
+<text class="bd" x="452" y="675">layout do banco trocado. O checkout fecha igual nos tres</text>
+<text class="tn" x="864" y="645">auditoria_rastro.py</text>
+<text class="bd" x="864" y="661">NAO importa nada de src/. Rele os CSVs gravados</text>
+<text class="bd" x="864" y="675">e os arquivos crus. Achou 15 pendencias sem rastro</text>
+<path class="up" d="M1124,594 V438" marker-end="url(#pu)"/>
+<text class="ft" x="24" y="726">python3 fechar.py  —  sem argumento, sem chave de API, sem passo manual antes de rodar.</text>
+<text class="ft2" x="24" y="744">Em outubro: mesma pasta, arquivos novos, mesmo comando. O que mudar de regra mora em cadastro/ e em comum.py.</text>
+</svg></div>
+<div class="leg">
+  <span><i class="i1"></i>arquivo do cliente</span>
+  <span><i class="i2"></i>port&atilde;o: confere e pode barrar</span>
+  <span><i class="i3"></i>onde o n&uacute;mero nasce e sai</span>
+  <span><i class="i4"></i>onde a regra mora, versionada</span>
+</div>
+
+<h2>As quatro decis&otilde;es que sustentam isso</h2>
+<div class="grade">
+  <article class="p v"><h3>Nome nunca &eacute; chave prim&aacute;ria</h3>
+    <p>A chave &eacute; o CNPJ de 14 d&iacute;gitos e, no checkout, o <code>cod_estabelecimento</code>.
+    Onde s&oacute; existe nome truncado, a resolu&ccedil;&atilde;o &eacute; por prefixo normalizado
+    <strong>&uacute;nico</strong>: empate ou aus&ecirc;ncia viram pend&ecirc;ncia, nunca palpite.</p></article>
+  <article class="p g"><h3>A regra sai da cabe&ccedil;a da analista</h3>
+    <p>O de-para dos ECs, as condi&ccedil;&otilde;es que o comercial fecha e toda premissa
+    discut&iacute;vel moram em arquivos versionados. Mudar uma resposta do financeiro &eacute;
+    mudar uma linha e rodar de novo.</p></article>
+  <article class="p"><h3>Nenhum palpite silencioso</h3>
+    <p>O que n&atilde;o casa por chave vira linha em <code>pendencias.csv</code> com motivo e dono.
+    Nunca um <code>fillna</code>, nunca um casamento aproximado aceito sozinho. A IA sugere e
+    devolve confian&ccedil;a; abaixo de 0,95 &eacute; pessoa, n&atilde;o c&oacute;digo.</p></article>
+  <article class="p"><h3>Nada &eacute; gravado sem fechar</h3>
+    <p>Seis invariantes rodam antes da grava&ccedil;&atilde;o. Se uma falhar, a sa&iacute;da
+    n&atilde;o sai. Total que n&atilde;o fecha com as linhas de origem &eacute; pior que total
+    que falta.</p></article>
+</div>
+
+<footer>
+  O mapa do processo do cliente &mdash; do cart&atilde;o do aluno at&eacute; o lan&ccedil;amento
+  cont&aacute;bil, com os sete gargalos &mdash; &eacute; a outra metade desta hist&oacute;ria e est&aacute;
+  em <strong>Fluxo e gargalos da Tarvo</strong>. Este aqui &eacute; o que a gente construiu em cima dele.
+</footer>
+</div>
