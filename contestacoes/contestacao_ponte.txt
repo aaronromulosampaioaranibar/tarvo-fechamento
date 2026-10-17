@@ -1,0 +1,45 @@
+Assunto: Divergencias no relatorio de 2026-09 - parceiro TARVO PAGAMENTOS
+Para: relatorios@pontecambio.com.br
+Cc: comercial.parceiros@pontecambio.com.br
+
+Prezados,
+
+Conferimos o relatorio de 2026-09 recebido em 02/10 e identificamos tres pontos.
+Respondemos dentro do prazo de 5 dias uteis previsto no e-mail de envio.
+
+1) SPREAD ACIMA DO CONTRATADO
+   Mundo Aberto - CNPJ 17217888000111
+   Spread contratado: 1.20%. Aplicado: cerca de 1.50% em 23 de 23 operacoes do mes.
+   Excesso cobrado do cliente: R$ 1.418,87
+
+   A condicao esta registrada no nosso contrato com o lojista desde a
+   renegociacao. Pedimos a correcao do cadastro e a restituicao ao cliente.
+
+2) OPERACOES COM SPREAD NEGATIVO
+   4 operacoes vieram com spread negativo, somando R$ -1.834,05,
+   todas com a observacao "Taxa travada no pedido (D-1)".
+   A trava de taxa vale 2 horas pelo contrato de parceria e essas
+   operacoes passaram do prazo. Elas ficam fora da nossa participacao
+   deste mes.
+
+     PC-0926-0210  2026-09-15  PONTE AÉREA ESTUDANT   realizado -1.5523%  contratado 1.50%
+       spread do relatorio R$ -687,52  |  ate o contrato R$ -1.351,88
+     PC-0926-0326  2026-09-03  CANGURU INTERCÂMBIOS   realizado -1.5523%  contratado 1.50%
+       spread do relatorio R$ -509,22  |  ate o contrato R$ -1.001,28
+     PC-0926-0491  2026-09-23  DUBLIN HUB INTERCÂMB   realizado -1.5512%  contratado 1.50%
+       spread do relatorio R$ -292,28  |  ate o contrato R$ -574,91
+     PC-0926-0545  2026-09-14  NOVO HORIZONTE INTER   realizado -1.6493%  contratado 1.40%
+       spread do relatorio R$ -345,03  |  ate o contrato R$ -637,91
+
+   Pedimos o ajuste ate o spread contratado: R$ 3.565,98.
+
+3) OPERACAO DUPLICADA NO RELATORIO
+   PC-0926-0162 aparece duas vezes, a segunda marcada
+   "reprocessada". Consideramos uma vez.
+   O rodape do relatorio soma R$ 78.073,59 de spread, contando as
+   duas linhas. Pedimos a correcao do relatorio do mes.
+
+Anexo: contestacao_ponte_operacoes.csv
+
+Atenciosamente,
+Financeiro - Tarvo Pagamentos Ltda

@@ -1,0 +1,20 @@
+Assunto: Devolucao de taxas - competencia 2026-09
+Para: financeiro@casadoestudanteviagens.com.br
+
+Prezados,
+
+Durante 2026-09 esteve em vigor a condicao especial acordada com o nosso
+time comercial. A adquirente nao foi informada a tempo e seguiu cobrando
+pela tabela anterior em todas as transacoes do periodo.
+
+Valor cobrado a maior: R$ 15.397,42, em 118 transacoes.
+
+O erro e nosso, nao da adquirente, e a devolucao sera feita integralmente
+no proximo repasse. O detalhe transacao a transacao segue em anexo.
+
+Pedimos desculpas pelo transtorno.
+
+Anexo: devolucao_00520815000100_transacoes.csv
+
+Atenciosamente,
+Financeiro - Tarvo Pagamentos Ltda

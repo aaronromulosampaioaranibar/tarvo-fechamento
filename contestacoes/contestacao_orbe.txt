@@ -1,0 +1,29 @@
+Assunto: Contestacao de taxas aplicadas - competencia 2026-09 - TARVO PAGAMENTOS
+Para: suporte.parceiros@orbe.com.br
+
+Prezados,
+
+No fechamento de 2026-09 identificamos transacoes em que a taxa aplicada por
+essa adquirente difere da taxa contratada com o lojista. Seguem os casos,
+com o detalhe transacao a transacao em anexo.
+
+Rota Global Intercâmbio Ltda - CNPJ 95927868000148
+  87 transacoes, diferenca liquida de R$ 1.546,28
+    contratado 2.49%  aplicado 2.99%  (38 transacoes)
+    contratado 2.99%  aplicado 3.49%  (31 transacoes)
+    contratado 3.59%  aplicado 4.09%  (18 transacoes)
+
+Escola Bridge de Idiomas Ltda - CNPJ 22224579000109
+  5 transacoes, diferenca liquida de R$ 29,95
+    contratado 2.19%  aplicado 2.59%  (5 transacoes)
+
+Total a restituir: R$ 1.576,23
+
+As condicoes estao contratadas e registradas na nossa tabela de taxas. Pedimos
+a correcao do cadastro e a restituicao da diferenca, que sera repassada aos
+lojistas afetados.
+
+Anexo: contestacao_orbe_operacoes.csv
+
+Atenciosamente,
+Financeiro - Tarvo Pagamentos Ltda

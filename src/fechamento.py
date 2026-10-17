@@ -209,6 +209,7 @@ class Fechamento:
     # ---------- 3. REMESSA ----------
     def remessa(self):
         vistos, ops = set(), []
+        self.spread_neg = []
         for o in self.ponte:
             if C.DEDUP_PONTE and o["operacao"] in vistos:
                 self._p("OPERACAO_DUPLICADA", o["operacao"], C.n2(o["spread_brl"] * C.PARTICIPACAO_SPREAD),
@@ -236,6 +237,11 @@ class Fechamento:
                         f"Para a contestacao com a Ponte: o que aconteceu foi R$ {o['spread_brl']:,.2f}; "
                         f"o que se pede de volta e a diferenca ate o contrato, R$ {ate_contrato:,.2f}",
                         "Financeiro Tarvo + Parceiro Ponte Cambio", o["arquivo_origem"])
+                self.spread_neg.append(dict(operacao=o["operacao"], cnpj=o["cnpj"],
+                    cliente=o["cliente"], data=C.iso(o["data_contratacao"]),
+                    spread_realizado=C.n2(o["spread_brl"]), spread_pct=o["spread_pct"],
+                    contratado_pct=contratado, ate_contrato=ate_contrato,
+                    valor_brl=C.n2(o["valor_brl"])))
                 if not C.INCLUI_SPREAD_NEGATIVO: continue
             ops.append(o)
         # informativa: liquidacoes que caem no mes seguinte

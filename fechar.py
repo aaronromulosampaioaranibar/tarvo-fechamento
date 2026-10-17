@@ -11,6 +11,7 @@ import argparse, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from src.fechamento import Fechamento
 from src.saida import gravar, autoteste
+from src.contestacoes import gerar as gerar_contestacoes
 from src import comum as C
 
 def main():
@@ -49,6 +50,7 @@ def main():
     gravar("pendencias.csv", f.pend, pasta)
     gravar("devolucoes_lojista.csv", f.devolucoes, pasta)
     gravar("rastro.csv", f.rastro, pasta)
+    cont = gerar_contestacoes(f, os.path.join(raiz, "contestacoes"))
 
     chk = sum(c["comissao_brl"] for c in f.cms_checkout)
     rem = sum(c["comissao_brl"] for c in f.cms_remessa)
@@ -66,6 +68,11 @@ def main():
   Linhas de rastro ........ {len(f.rastro):>14}
 
   Saida em {pasta}""")
+    if cont:
+        print("\n  Rascunhos de contestacao (a Helena revisa e envia):")
+        for destino, valor, n in cont:
+            print(f"    {destino:<34} R$ {valor:>11,.2f}  ({n} operacoes)")
+        print(f"    em {os.path.join(raiz, 'contestacoes')}")
     return 0
 
 if __name__ == "__main__":
