@@ -15,7 +15,7 @@ PADROES = {
     "meridiano":["*meridiano*.ofx", "*.ofx"],
 }
 
-def achar(pasta, chave):
+def achar(pasta, chave, obrigatorio=True):
     for p in PADROES[chave]:
         hits = sorted(glob.glob(os.path.join(pasta, p)))
         hits = [h for h in hits if os.path.isfile(h)]
@@ -23,6 +23,7 @@ def achar(pasta, chave):
             if len(hits) > 1:
                 raise RuntimeError(f"mais de um arquivo para '{chave}' em {pasta}: {hits}")
             return hits[0]
+    if not obrigatorio: return None
     raise FileNotFoundError(f"nao achei arquivo de '{chave}' em {pasta} (padroes {PADROES[chave]})")
 
 def _texto(caminho):

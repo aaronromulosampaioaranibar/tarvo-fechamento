@@ -45,11 +45,39 @@ Toda decisão delegada está escrita aqui com o motivo, que foi o que a Helena p
 | **B2** | Atlas em `comissoes_por_lojista.csv` | **Sai zerada, com pendência** e as 57 transações no rastro | A Helena disse que as duas formas servem. Zerada preserva a rastreabilidade: o volume existe, o lojista existe, e a linha mostra que a apuração está travada, em vez de simplesmente sumir. A coluna `apuravel=0` diz por quê. |
 | **B3** | As 118 transações da Casa em `divergencias_taxa.csv` | **Não.** Vão para `devolucoes_lojista.csv`, com o total na pendência e o detalhe no rastro | A Helena disse "basta a pendência, não precisa". Misturar com as divergências de contrato arriscaria somar R$ 15.397,42 numa cobrança à Orbe que não existe. Arquivo separado dá o detalhe por transação sem poluir o total a cobrar. |
 | **B4** | Critério do alerta de antecipação | **Só acende para lojista sem venda anterior à competência que antecipa acima do que vendeu no mês.** Em setembro: só a Atlas | A antecipação é sobre a agenda inteira, com parcelas de meses anteriores que este arquivo não traz. "Antecipou mais do que vendeu no mês" acenderia **6 lojistas**, cinco deles sem nenhum problema — Canguru antecipou R$ 31.765 com R$ 1.934 vendidos, sobre parcelas de agosto. O risco que a Helena descreveu é lojista novo sem histórico, e é isso que o critério captura. |
-| **B5** | Antecipação revertida conta no alerta? | **Sim, conta o antecipado bruto** | O risco existiu no momento em que o dinheiro saiu. A reversão veio depois (Atlas: 15/09 revertida em 17/09). Para um alerta de crédito, o que importa é que a operação foi autorizada, não que foi desfeita dois dias depois. |
+| **B5** | Antecipação revertida conta no alerta? | **Alerta pelo pico, com as reversões citadas no próprio alerta** | O risco existiu quando o dinheiro foi adiantado. Na Atlas o antecipado líquido no fim do mês (R$ 127.230,96) fica *abaixo* das vendas, então olhar só o saldo final apagaria o caso inteiro. O alerta nomeia as duas reversões para a Helena julgar. Proposta equivalente da Fox AI aprovada em 17/10 12h50. |
 | **B6** | Conta da devolução de PIX da Mundo Aberto | **2.1.01.001 Repasses a lojistas a pagar** | O repasse voltou, então a obrigação com o lojista volta a existir. A 2.1.01.002 é para crédito concedido ao lojista, que não é o caso aqui. Mesmo critério para qualquer repasse devolvido. |
+| **B6b** | Valor da **devolução** ao lojista | **O que a Orbe descontou de fato (`valor_taxa`) menos a comissão contratada** — R$ 15.396,77 na Casa, e não os R$ 15.397,42 da fórmula da divergência | São dois números com propósitos diferentes, e a Helena confirmou os dois: a divergência é o que se cobra do parceiro (`valor_bruto ×` diferença de taxa, A3); a devolução é o que saiu do bolso do lojista. A diferença de R$ 0,65 é o truncamento da Orbe. *"Devolvo o que saiu do bolso do lojista"* (17/10 12h50). As duas colunas saem em `devolucoes_lojista.csv`. |
 | **B7** | Os três centavos da divergência da Mundo Aberto | **`valor_bruto × (aplicada − contratada)`**, como a Helena pediu em A3 → R$ 1.418,87 | É a fórmula que ela própria definiu para o valor da divergência. Usar o `Spread R$` do relatório daria R$ 1.418,88, mas misturaria o arredondamento da Ponte no nosso número. |
 | **B8** | `quem_decide` | Texto livre com **área + papel** (ex.: "Financeiro Tarvo + Parceiro Orbe") | A organização confirmou que é texto livre. Nomear as duas pontas deixa claro quem contesta e quem ressarce. |
 | **B9** | Vários `ref_origem` numa pendência | Separados por **`|`** | A organização confirmou que vale. Usamos `;` como separador do CSV, então `|` evita qualquer ambiguidade de parsing. |
+
+---
+
+## B-bis. Comportamento quando falta fonte
+
+> *"Prefiro que a solução avise a que quebre sem ninguém perceber."*
+> *"Quando falta alguma coisa, eu não seguro o mês inteiro. Fecha o que não depende daquilo,
+> marca o que é provisório e deixa claro o que está bloqueado e por quê. Quem libera sou eu."*
+> — Helena, 17/10 12h31
+
+`src/validacao.py` confere as seis fontes antes de ler qualquer número: arquivo presente,
+sem ambiguidade, e com as colunas que o layout do mês passado tinha. Um problema **não**
+derruba o fechamento:
+
+| Situação | O que acontece |
+|---|---|
+| Arquivo não chegou | Bloqueia só a parte que depende dele; o resto fecha |
+| Parceiro mudou o layout sem avisar | O fechamento diz **quais colunas sumiram**, e bloqueia aquela parte |
+| Dois arquivos candidatos ao mesmo padrão | Bloqueia e nomeia os dois, em vez de escolher um |
+
+A parte bloqueada vira pendência `FONTE_INDISPONIVEL` com o motivo e `quem_decide =
+Financeiro Tarvo (comercial decide antes se for taxa ou cadastro)`, a saída sai marcada
+`[PROVISORIO]`, e uma pendência `FECHAMENTO_PROVISORIO` resume o que ficou de fora.
+
+`testes/teste_fontes.py` prova os três cenários. Com o e-mail da Ponte ausente, o checkout
+fecha em **exatamente** os mesmos R$ 207.039,73; com o Aurora de layout trocado, o Meridiano
+classifica seus 100 lançamentos sozinho. Nos três casos o rastro continua fechando.
 
 ---
 

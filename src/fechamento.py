@@ -5,6 +5,7 @@ from collections import defaultdict
 from . import leitores as L
 from .identidade import Cadastro
 from .classificacao import classificar
+from . import validacao
 from . import comum as C
 
 TOMADOR_NF_REMESSA = "PONTE"     # Q12: "PONTE" ou "LOJISTA"
@@ -15,7 +16,8 @@ class Fechamento:
         self.ano, self.mes = int(competencia[:4]), int(competencia[5:7])
         self.agente_ia = agente_ia
         self.rastro, self.pend, self._npend = [], [], 0
-        self.avisos = []
+        self.fontes_ok, self.problemas, self.bloqueios = set(), [], {}
+        self.provisorio = False
 
     # ---------- utilitarios ----------
     def _r(self, id_saida, arquivo, ref, valor):
@@ -35,13 +37,34 @@ class Fechamento:
 
     # ---------- carga ----------
     def carregar(self):
-        self.orbe   = L.ler_orbe(self.pasta)
-        self.taxas  = L.ler_taxas(self.pasta)
-        self.ponte, self.meta_ponte = L.ler_ponte(self.pasta)
-        self.aurora = L.ler_aurora(self.pasta)
-        self.merid  = L.ler_meridiano(self.pasta)
-        self.plano  = {c["codigo"]: c for c in L.ler_plano(self.pasta)}
-        self.cad    = Cadastro(self.taxas, self.raiz)
+        """Confere as fontes antes de ler. Fonte ausente ou com layout mudado bloqueia
+        so a parte que depende dela: o resto do mes fecha e sai marcado como provisorio."""
+        self.fontes_ok, self.problemas = validacao.conferir(self.pasta)
+        self.bloqueios = validacao.partes_bloqueadas(self.fontes_ok)
+        self.provisorio = bool(self.bloqueios)
+
+        self.orbe   = L.ler_orbe(self.pasta)       if "orbe" in self.fontes_ok else []
+        self.taxas  = L.ler_taxas(self.pasta)      if "taxas" in self.fontes_ok else []
+        self.aurora = L.ler_aurora(self.pasta)     if "aurora" in self.fontes_ok else []
+        self.merid  = L.ler_meridiano(self.pasta)  if "meridiano" in self.fontes_ok else []
+        self.plano  = ({c["codigo"]: c for c in L.ler_plano(self.pasta)}
+                       if "plano" in self.fontes_ok else {})
+        if "ponte" in self.fontes_ok:
+            self.ponte, self.meta_ponte = L.ler_ponte(self.pasta)
+        else:
+            self.ponte, self.meta_ponte = [], {"corpo": "", "rodape": {}, "arquivo": ""}
+        self.cad = Cadastro(self.taxas, self.raiz)
+
+        for pb in self.problemas:
+            partes = [k for k, v in self.bloqueios.items() if pb["fonte"] in v]
+            rotulo = {"AUSENTE": "arquivo nao chegou",
+                      "LAYOUT_MUDOU": "o layout mudou desde o mes passado",
+                      "AMBIGUO": "mais de um arquivo candidato"}[pb["tipo"]]
+            self._p("FONTE_INDISPONIVEL", pb["fonte"], 0.0,
+                    f"{pb['fonte']}: {rotulo}. {pb['detalhe']}. "
+                    f"Bloqueia: {', '.join(partes) if partes else 'nenhuma parte'}. "
+                    f"O restante do mes fechou e a saida esta marcada como PROVISORIA",
+                    "Financeiro Tarvo (comercial decide antes se for taxa ou cadastro)")
 
     # ---------- 1. CHECKOUT ----------
     def checkout(self):
@@ -134,12 +157,22 @@ class Fechamento:
                 g["antigo"] = True
         for ec, g in sorted(por_ec.items()):
             if g["antigo"] or g["ant"] <= g["ven"] or g["ant"] <= 0: continue
+            revs = [t for t in self.orbe
+                    if t["ec"] == ec and t["tipo"] == "REVERSAO ANTECIPACAO"]
+            liq = C.n2(g["ant"] + sum(t["valor_bruto"] or 0 for t in revs))
+            nota_rev = ""
+            if revs:
+                nota_rev = (f" Duas ressalvas: {len(revs)} antecipacoes foram revertidas depois "
+                            f"({', '.join(t['id_transacao'] for t in revs)}), e o antecipado liquido "
+                            f"no fim do mes fica em R$ {liq:,.2f}. O alerta e pelo PICO, nao pelo "
+                            f"saldo: o risco existiu quando o dinheiro foi adiantado.")
             self._p("ANTECIPACAO_SEM_LASTRO", f"EC {ec}", C.n2(g["ant"] - g["ven"]),
                     f"{g['nome']} nao tem venda anterior a esta competencia e antecipou "
                     f"R$ {g['ant']:,.2f} contra R$ {g['ven']:,.2f} vendidos no mes. Lojista novo "
                     f"antecipando acima do que vendeu. Criterio nosso (ver HIPOTESES.md): o alerta "
                     f"so acende para quem nao tem agenda anterior, porque a antecipacao e sobre a "
-                    f"agenda inteira e comparar com as vendas do mes acenderia lojista demais",
+                    f"agenda inteira e comparar com as vendas do mes acenderia lojista demais."
+                    + nota_rev,
                     "Financeiro Tarvo + Comercial Tarvo")
 
     # ---------- 2. DIVERGENCIAS E DEVOLUCOES DE CHECKOUT ----------
@@ -159,16 +192,25 @@ class Fechamento:
             if abs(dif) < C.TOLERANCIA_TAXA_PP: continue
             dbrl = C.n2((t["valor_bruto"] or 0) * dif / 100)
             if t["_especial"]:
+                # A devolucao NAO usa a formula da divergencia. O que volta para o lojista e o
+                # que saiu do bolso dele: o que a Orbe descontou de fato (valor_taxa, truncado
+                # por ela) menos a comissao a que a Tarvo tinha direito. Resposta ao Lucca
+                # Landeiro, 17/10 12h50: "devolvo o que saiu do bolso do lojista".
+                devolver = C.n2((t["valor_taxa"] or 0) - (t["_comissao"] or 0))
                 idx = f"DEV-{t['id_transacao']}"
                 dev.append(dict(id_saida=idx, cnpj=t["_cnpj"],
                                 lojista=self.cad.nome.get(t["_cnpj"], t["nome_orbe"]),
                                 ref_origem=t["ref_origem"], data=C.iso(t["data_movimento"]),
                                 taxa_contratada_pct=round(t["_tc"], 4),
                                 taxa_aplicada_pct=round(t["taxa_aplicada"], 4),
-                                valor_bruto=C.n2(t["valor_bruto"]), valor_brl=dbrl,
+                                valor_bruto=C.n2(t["valor_bruto"]),
+                                valor_descontado_pela_orbe=C.n2(t["valor_taxa"]),
+                                comissao_contratada=C.n2(t["_comissao"]),
+                                valor_brl=devolver,
+                                diferenca_pela_formula_brl=C.n2(dbrl - devolver),
                                 motivo="isencao comercial nao informada a Orbe - devolucao da Tarvo "
-                                       "ao lojista, fora da cobranca da adquirente"))
-                self._r(idx, t["arquivo_origem"], t["ref_origem"], dbrl)
+                                       "ao lojista pelo valor efetivamente descontado"))
+                self._r(idx, t["arquivo_origem"], t["ref_origem"], devolver)
                 continue
             idx = f"DIV-CHK-{t['id_transacao']}"
             div.append(dict(id_saida=idx, cnpj=t["_cnpj"], linha_negocio="CHECKOUT",
@@ -253,7 +295,7 @@ class Fechamento:
                     f"Receita reconhecida aqui, caixa so no mes seguinte",
                     "Contabilidade")
         # confronto com o rodape do parceiro
-        rod = self.meta_ponte["rodape"].get("spread")
+        rod = self.meta_ponte.get("rodape", {}).get("spread")
         soma = sum(o["spread_brl"] for o in ops)
         if rod and abs(rod - soma) > 0.01:
             self._p("DIVERGENCIA_COM_PARCEIRO", "rodape do relatorio Ponte", C.n2(rod - soma),
@@ -424,4 +466,11 @@ class Fechamento:
         self.remessa()
         self.lancamentos()
         self.notas()
+        if self.provisorio:
+            self._p("FECHAMENTO_PROVISORIO", "|".join(sorted(self.bloqueios)), 0.0,
+                    f"{len(self.bloqueios)} parte(s) bloqueada(s) por fonte indisponivel: "
+                    f"{'; '.join(f'{k} (falta {chr(44).join(v)})' for k, v in self.bloqueios.items())}. "
+                    f"Os numeros das partes que fecharam estao completos; o total do mes nao. "
+                    f"Liberar quando a fonte chegar e rodar de novo",
+                    "Financeiro Tarvo")
         return self

@@ -26,14 +26,38 @@ python3 fechar.py --entrada "./entrada/2026-10" --competencia 2026-10
 
 | Arquivo | Linhas em set/2026 |
 |---|---|
-| `comissoes_por_lojista.csv` | 36 (22 checkout + 14 remessa) |
-| `divergencias_taxa.csv` | 115 transações, R$ 2.995,10 |
-| `notas_a_emitir.csv` | 23 |
-| `lancamentos_classificados.csv` | 184, 100% com conta |
+| `comissoes_por_lojista.csv` | 36 (22 checkout + 14 remessa) — R$ 207.039,73 + R$ 39.543,45 |
+| `divergencias_taxa.csv` | 115 transações, R$ 2.995,10 a cobrar dos parceiros |
+| `devolucoes_lojista.csv` | 118 transações, R$ 15.396,77 do bolso da Tarvo |
+| `notas_a_emitir.csv` | 21 |
+| `lancamentos_classificados.csv` | 184, 100% com conta, todos por regra |
 | `pendencias.csv` | 31 |
-| `rastro.csv` | 4.664 |
+| `rastro.csv` | 4.598 |
+
+Mais `contestacoes/`: três rascunhos de e-mail por contraparte, com as operações em anexo,
+para o financeiro revisar e enviar.
 
 Formato fixo: `;` como separador, `.` decimal, datas `AAAA-MM-DD`, CNPJ com 14 dígitos.
+
+## Quando falta uma fonte
+
+O fechamento **não para**. `src/validacao.py` confere as seis fontes antes de ler qualquer
+número e, se uma estiver ausente ou com o layout mudado, bloqueia só a parte que depende
+dela, diz o motivo e marca a saída como `[PROVISORIO]`:
+
+```
+=== FECHAMENTO 2026-09  [PROVISORIO] ===
+  !! FONTES COM PROBLEMA:
+     - ponte: AUSENTE - nenhum arquivo bate com ['*ponte*cambio*.eml', ...]
+     - aurora: LAYOUT_MUDOU - nao encontrei: Data, Lançamento, Valor (R$)
+     > REMESSA BLOQUEADO (falta ponte)
+     > EXTRATO_AURORA BLOQUEADO (falta aurora)
+     O restante fechou. Os numeros abaixo sao parciais.
+```
+
+Para provar: `python3 testes/teste_fontes.py` monta os três cenários a partir dos arquivos
+reais e confere que o checkout fecha no mesmo valor com a Ponte ausente, e que o Meridiano
+fecha sozinho com o Aurora quebrado.
 
 ## Autoteste de fechamento
 

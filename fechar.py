@@ -33,7 +33,15 @@ def main():
     f = Fechamento(entrada, raiz=raiz, competencia=a.competencia).executar()
 
     ok, falhas, conferencias = autoteste(f)
-    print(f"\n=== FECHAMENTO {a.competencia} ===")
+    print(f"\n=== FECHAMENTO {a.competencia}"
+          f"{'  [PROVISORIO]' if f.provisorio else ''} ===")
+    if f.problemas:
+        print("\n  !! FONTES COM PROBLEMA:")
+        for pb in f.problemas:
+            print(f"     - {pb['fonte']}: {pb['tipo']} - {pb['detalhe'][:90]}")
+        for parte, falta in f.bloqueios.items():
+            print(f"     > {parte} BLOQUEADO (falta {', '.join(falta)})")
+        print("     O restante fechou. Os numeros abaixo sao parciais.\n")
     for c in conferencias: print("  [ok]", c)
     if falhas:
         print("\n  !! AUTOTESTE FALHOU:")
