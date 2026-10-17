@@ -159,8 +159,11 @@ def main():
   Tudo roda nesta maquina. Nenhum arquivo sai daqui.
   Para encerrar, feche esta janela.
 """)
-    try: webbrowser.open(url)
+    aberto = False
+    try: aberto = webbrowser.open(url)
     except Exception: pass
+    if not aberto:
+        print("  (nao consegui abrir o navegador sozinho - copie o endereco acima)\n")
     try: srv.serve_forever()
     except KeyboardInterrupt: print("  encerrado.")
 
