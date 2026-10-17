@@ -26,13 +26,13 @@ python3 fechar.py --entrada "./entrada/2026-10" --competencia 2026-10
 
 | Arquivo | Linhas em set/2026 |
 |---|---|
-| `comissoes_por_lojista.csv` | 36 (22 checkout + 14 remessa) — R$ 207.039,73 + R$ 39.543,45 |
+| `comissoes_por_lojista.csv` | 36 (22 checkout + 14 remessa) — R$ 203.735,34 + R$ 39.543,45 |
 | `divergencias_taxa.csv` | 115 transações, R$ 2.995,10 a cobrar dos parceiros |
 | `devolucoes_lojista.csv` | 118 transações, R$ 15.396,77 do bolso da Tarvo |
 | `notas_a_emitir.csv` | 21 |
 | `lancamentos_classificados.csv` | 184, 100% com conta, todos por regra |
 | `pendencias.csv` | 31 |
-| `rastro.csv` | 4.598 |
+| `rastro.csv` | 4.626 |
 
 Mais `contestacoes/`: três rascunhos de e-mail por contraparte, com as operações em anexo,
 para o financeiro revisar e enviar.
@@ -51,6 +51,10 @@ python3 -m pip install -r requirements.txt
 python3 fechar.py
 diff -r saida/ ../tarvo-fechamento-original/saida/   # sem diferencas
 ```
+
+A Orbe pode mandar o relatório do mês **e** ajustes tardios depois. O leitor consome
+todos os arquivos que batem com `*orbe*.csv`, e cada linha carrega o arquivo de onde veio,
+então o rastro distingue um estorno do relatório de um que chegou no ajuste.
 
 Nada fora do repositório é necessário: nem chave de API, nem arquivo solto, nem
 configuração local. Os arquivos do mês estão em `entrada/2026-09/`, exatamente como o

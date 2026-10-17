@@ -7,7 +7,9 @@ from .comum import brl, pct, data_br, cnpj14, digitos
 
 # Os arquivos sao localizados por PADRAO, nao por nome exato: em outubro o nome muda.
 PADROES = {
-    "orbe":     ["*orbe*comiss*.csv", "*orbe*.csv"],
+    # A Orbe manda o relatorio do mes e, as vezes, ajustes tardios depois. TODOS os
+    # arquivos que batem entram no fechamento; achar_varios nao escolhe um so.
+    "orbe":     ["*orbe*.csv"],
     "taxas":    ["*taxas*contratadas*.xlsx", "*taxas*.xlsx"],
     "ponte":    ["*ponte*cambio*.eml", "*cambio*.eml", "*.eml"],
     "plano":    ["*plano*contas*.csv"],
@@ -26,6 +28,14 @@ def achar(pasta, chave, obrigatorio=True):
     if not obrigatorio: return None
     raise FileNotFoundError(f"nao achei arquivo de '{chave}' em {pasta} (padroes {PADROES[chave]})")
 
+def achar_varios(pasta, chave):
+    """Todos os arquivos que batem com o padrao, nao so um. Usado onde a fonte pode
+    chegar em partes (relatorio do mes + ajustes tardios)."""
+    hits = []
+    for p in PADROES[chave]:
+        hits += [h for h in glob.glob(os.path.join(pasta, p)) if os.path.isfile(h)]
+    return sorted(set(hits))
+
 def _texto(caminho):
     """CSV do cliente vem ora em utf-8, ora em latin-1. Detecta."""
     bruto = open(caminho, "rb").read()
@@ -36,7 +46,27 @@ def _texto(caminho):
 
 # ---------------------------------------------------------------- ORBE
 def ler_orbe(pasta):
-    f = achar(pasta, "orbe"); nome = os.path.basename(f)
+    """Le TODOS os arquivos da Orbe do mes, em ordem de nome.
+
+    O relatorio principal chega primeiro; ajustes tardios chegam depois, no mesmo
+    formato. Cada linha carrega o arquivo de onde veio, entao o rastro distingue
+    um estorno do relatorio de um estorno que chegou no ajuste."""
+    arquivos = achar_varios(pasta, "orbe")
+    if not arquivos:
+        raise FileNotFoundError(f"nao achei arquivo de 'orbe' em {pasta}")
+    out = []
+    for f in arquivos:
+        out += _ler_orbe_um(f)
+    vistos = {}
+    for t in out:
+        if t["id_transacao"] in vistos:
+            t["_duplicado_de"] = vistos[t["id_transacao"]]
+        else:
+            vistos[t["id_transacao"]] = t["arquivo_origem"]
+    return out
+
+def _ler_orbe_um(f):
+    nome = os.path.basename(f)
     linhas = _texto(f).splitlines()
     cab = [c.strip() for c in linhas[0].split(";")]
     out = []

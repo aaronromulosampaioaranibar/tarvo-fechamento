@@ -40,6 +40,23 @@ def conferir(pasta):
     """-> (fontes_ok: set, problemas: [dict])"""
     ok, problemas = set(), []
     for chave in ESPERADO:
+        if chave == "orbe":
+            arqs = L.achar_varios(pasta, "orbe")
+            if not arqs:
+                problemas.append(dict(fonte="orbe", tipo="AUSENTE",
+                                      detalhe=f"nenhum arquivo bate com {L.PADROES['orbe']}"))
+                continue
+            ruins = []
+            for a in arqs:
+                falta = _colunas_faltando("orbe", a)
+                if falta: ruins.append(f"{os.path.basename(a)} ({', '.join(falta)})")
+            if ruins:
+                problemas.append(dict(fonte="orbe", tipo="LAYOUT_MUDOU",
+                                      arquivo="; ".join(os.path.basename(a) for a in arqs),
+                                      detalhe="nao encontrei em " + "; ".join(ruins)))
+            else:
+                ok.add("orbe")
+            continue
         try:
             caminho = L.achar(pasta, chave)
         except FileNotFoundError:

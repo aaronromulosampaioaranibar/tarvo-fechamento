@@ -52,3 +52,26 @@ R$ 38.625,85 para R$ 38.625,83 e passou a fechar com as 232 linhas que o compõe
 
 Um erro de R$ 0,03 é irrelevante no mês. A regra que o produziu — somar primeiro e arredondar
 depois — não é.
+
+---
+
+## 4. O arquivo novo teria passado em silêncio
+
+**O que aconteceu:** às 13h a organização avisou que a Orbe mandou
+`06_orbe_ajustes_tardios_set2026.csv`, com 14 linhas, "no mesmo formato do arquivo 01",
+e disse que "se a solução de vocês já recebe os arquivos do mês, deve bastar rodar de novo".
+
+**O que a nossa solução fez:** nada. O padrão de busca era `*orbe*comiss*.csv`, que casa
+só com o relatório principal. O arquivo novo ficaria na pasta e o fechamento rodaria
+normalmente, com os números antigos, sem erro e sem aviso.
+
+**O que fizemos com isso:** o padrão virou `*orbe*.csv` e o leitor passou a consumir
+**todos** os arquivos da Orbe do mês, com cada linha carregando o arquivo de onde veio.
+Impacto: −R$ 3.304,39 de comissão (10 estornos, 3 reversões de antecipação e uma venda),
+com o checkout caindo de R$ 207.039,73 para R$ 203.735,34.
+
+A ironia é que, uma hora antes, tínhamos acabado de implementar o aviso de fonte faltando
+justamente porque a Helena disse "prefiro que a solução avise a que quebre sem ninguém
+perceber". A validação olhava se os arquivos esperados estavam lá — não se tinha chegado
+um a mais. Fonte que some e fonte que se multiplica são o mesmo risco, e só tínhamos
+coberto metade dele.
