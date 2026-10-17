@@ -111,3 +111,44 @@ linguagem, regra onde há dinheiro.
 
 **"Quanto tempo para rodar outubro?"**
 Criar a pasta `entrada/2026-10`, largar os arquivos, dois cliques. Sem tocar no código.
+
+---
+
+## O que aparece na tela em cada bloco
+
+| Bloco | Na tela |
+|---|---|
+| 1 · O problema | `docs/fluxo-tarvo.html` — o mapa das seis fontes. Apontar para a linha do extrato truncado. |
+| 2 · O que entregamos | A pasta `solucao` no Explorador. Dar o duplo clique ao vivo (ver abaixo). |
+| 3 · Setembro fechado | A janela preta com os totais, ainda aberta do clique. |
+| 4 · O que nos diferencia | `rastro.csv` aberto; depois `pendencias.csv` na coluna `quem_decide`; depois `PROMPTS/MOMENTOS.md`. |
+| 5 · Os dois achados | `pendencias.csv` nas linhas PEN-015 (Casa do Estudante) e PEN-012 (Atlas). |
+| 6 · Fecho | `docs/arquitetura-tarvo.html` — o desenho do motor. |
+
+## A demonstração ao vivo (30 segundos, no bloco 2)
+
+Antes de começar: **feche o Excel** e deixe duas janelas prontas — o Explorador na pasta
+`solucao` e o navegador no `docs/fluxo-tarvo.html`.
+
+1. Duplo clique em `FECHAR O MES.bat`.
+2. Enquanto roda, dizer a frase: *"ela larga os arquivos numa pasta e clica — é isso."*
+3. A janela imprime as 11 conferências e os totais. A pasta `saida` abre sozinha.
+4. Apontar: **0,18 segundo**.
+
+**Se algo der errado ao vivo**, não insista: a `saida/` já está no repositório, pronta.
+Abra os CSVs direto e diga *"o resultado é este, e está no repositório desde as 18h"*.
+Uma demonstração que falha e é contornada em cinco segundos não custa ponto nenhum;
+uma pessoa tentando consertar ao vivo custa o pitch inteiro.
+
+## Três coisas para não dizer
+
+**Não dizer que "a IA classificou os lançamentos".** Em setembro, 184 de 184 saíram por
+regra determinística. A camada de IA existe, está desenhada e documentada, e não precisou
+agir. Dizer isso como está é mais forte, e é verdade.
+
+**Não vender a tela do navegador.** Ela está no repositório como alternativa, mas o caminho
+suportado é o atalho de dois cliques. Se perguntarem, responder exatamente isso.
+
+**Não arredondar os números na fala.** São R$ 243.278,79, R$ 15.396,77, R$ 2.995,10. A banca
+vai conferir contra os CSVs, e "mais ou menos 243 mil" enfraquece justamente o argumento de
+que cada centavo tem origem.
