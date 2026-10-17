@@ -4,11 +4,29 @@ Fecha o mês da Tarvo a partir dos arquivos **como o cliente manda** — CSV pt-
 planilha mantida à mão, e-mail com anexo, OFX — e entrega os seis arquivos de saída
 com rastro de cada número até a linha de origem.
 
-## Rodar do zero
+## Rodar
+
+**Pela tela**, que é como a analista usa:
+
+| | |
+|---|---|
+| Windows | duplo clique em `rodar.bat` |
+| Mac e Linux | duplo clique em `rodar.command` |
+
+O navegador abre sozinho. Ela escolhe a competência, arrasta os arquivos do mês do jeito
+que chegaram, clica em **Fechar o mês**, e a página mostra os totais, as pendências com
+motivo e dono, e os links para baixar cada arquivo ou tudo num `.zip`.
+
+Tudo roda na própria máquina, em `127.0.0.1`. Nenhum arquivo sai de lá, não há chave de
+API e funciona sem internet. Cada rodada é gravada em `execucoes/<competência>_<data-hora>/`,
+então uma rodada nova nunca sobrescreve a anterior.
+
+**Pelo terminal**, que é como a banca roda:
 
 ```bash
-python3 -m pip install openpyxl          # única dependência
-python3 fechar.py --entrada "/caminho/da/pasta/do/mes" --competencia 2026-09
+python3 -m pip install -r requirements.txt   # só openpyxl
+python3 fechar.py                            # usa entrada/2026-09 e grava em saida/
+python3 fechar.py --entrada "/pasta/do/mes" --competencia 2026-10
 ```
 
 Sem chaves de API para o caminho padrão: **todo número sai de regra determinística.**
@@ -116,6 +134,7 @@ Três scripts rodam por fora do motor:
 | `testes/conformidade_formato.py` | o formato fixo dos seis arquivos: separador, decimal, datas, CNPJ, domínios fechados, `ref_origem` por fonte, conta que aceita lançamento |
 | `testes/teste_fontes.py` | os três cenários de fonte ausente ou layout mudado |
 | `testes/auditoria_rastro.py` | o rastro, **sem importar nada de `src/`** |
+| `testes/teste_tela.py` | a tela de ponta a ponta: upload dos sete arquivos, números na página, downloads, e caminho maldoso bloqueado |
 
 `auditoria_rastro.py` refaz a conferência **sem
 importar nada de `src/`**: relê os CSVs gravados e os arquivos crus com parsing próprio,
