@@ -9,7 +9,6 @@ arrasta os arquivos do mes. Nada sai do computador dela: nao ha envio para nenhu
 servidor externo, nenhuma chave de API, e funciona sem internet.
 """
 import os, sys, io, re, json, zipfile, shutil, socket, webbrowser, datetime as dt
-import email, email.policy
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
@@ -34,20 +33,44 @@ ARQS = [("comissoes_por_lojista.csv", "comissao por lojista e linha"),
         ("execucao.json", "registro desta rodada")]
 
 def partes(headers, corpo):
-    """multipart/form-data sem o modulo cgi, que saiu do Python 3.13."""
-    bruto = (b"Content-Type: " + headers.get("Content-Type", "").encode()
-             + b"\r\nMIME-Version: 1.0\r\n\r\n" + corpo)
-    msg = email.message_from_bytes(bruto, policy=email.policy.default)
+    """multipart/form-data lido na mao.
+
+    Nao usamos o modulo cgi (saiu no Python 3.13) nem o email.policy.default, que
+    muda de comportamento entre versoes e ja nos custou uma tarde: o parser abaixo
+    so corta o corpo nas fronteiras e le os cabecalhos de cada parte, e isso se
+    comporta igual do 3.8 ao 3.14."""
+    ctype = headers.get("Content-Type", "") or ""
+    m = re.search(r'boundary=(?:"([^"]+)"|([^;\s]+))', ctype, re.I)
+    if not m:
+        raise ValueError("o navegador nao mandou a fronteira do formulario")
+    fronteira = ("--" + (m.group(1) or m.group(2))).encode()
+
     campos, arquivos = {}, []
-    for p in msg.iter_parts():
-        nome = p.get_param("name", header="content-disposition")
-        fn = p.get_filename()
-        dados = p.get_payload(decode=True)
+    for bloco in corpo.split(fronteira):
+        if not bloco or bloco in (b"--", b"--\r\n", b"\r\n"): continue
+        bloco = bloco.lstrip(b"\r\n")
+        if bloco.startswith(b"--"): continue          # fronteira final
+        corte = bloco.find(b"\r\n\r\n")
+        if corte < 0: continue
+        cab = bloco[:corte].decode("utf-8", "replace")
+        dados = bloco[corte + 4:]
+        if dados.endswith(b"\r\n"): dados = dados[:-2]
+
+        disp = ""
+        for linha in cab.split("\r\n"):
+            if linha.lower().startswith("content-disposition:"): disp = linha
+        nome = _param(disp, "name")
+        fn = _param(disp, "filename")
         if fn:
-            if dados: arquivos.append((os.path.basename(fn), dados))
+            if dados: arquivos.append((os.path.basename(fn.replace("\\", "/")), dados))
         elif nome:
-            campos[nome] = (dados or b"").decode("utf-8", "replace").strip()
+            campos[nome] = dados.decode("utf-8", "replace").strip()
     return campos, arquivos
+
+def _param(cabecalho, chave):
+    m = re.search(chave + r'=(?:"([^"]*)"|([^;]*))', cabecalho, re.I)
+    if not m: return None
+    return (m.group(1) if m.group(1) is not None else (m.group(2) or "")).strip()
 
 class App(BaseHTTPRequestHandler):
     def log_message(self, *a): pass
