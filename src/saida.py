@@ -22,6 +22,26 @@ COLUNAS = {
   "rastro.csv": ["id_saida","arquivo_origem","ref_origem","valor","regra"],
 }
 
+def conferir_escrita(pasta):
+    """Quais arquivos de saida estao travados por outro programa.
+
+    No Windows, um CSV aberto no Excel nao pode ser regravado. Se descobrirmos isso
+    no meio da gravacao, metade dos arquivos ja foi trocada e a outra metade continua
+    sendo a do mes passado - uma saida incoerente, que e exatamente o que este projeto
+    promete nunca entregar. Entao perguntamos ANTES de apurar qualquer coisa.
+
+    Devolve a lista de nomes travados (vazia quando esta tudo livre)."""
+    travados = []
+    if not os.path.isdir(pasta): return travados
+    for nome in list(COLUNAS) + ["execucao.json"]:
+        caminho = os.path.join(pasta, nome)
+        if not os.path.exists(caminho): continue
+        try:
+            with open(caminho, "a"): pass
+        except OSError:
+            travados.append(nome)
+    return travados
+
 def _fmt(v):
     if v is None: return ""
     if isinstance(v, bool): return "1" if v else "0"

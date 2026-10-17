@@ -10,7 +10,7 @@ escreve os seis arquivos de saida e nao grava nada se o autoteste de fechamento 
 import argparse, os, re, sys, datetime as dt
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from src.fechamento import Fechamento
-from src.saida import gravar, autoteste
+from src.saida import gravar, autoteste, conferir_escrita
 from src.contestacoes import gerar as gerar_contestacoes
 from src.execucao import registrar
 from src import comum as C
@@ -50,6 +50,15 @@ def main():
         print(f"pasta de entrada nao encontrada: {entrada}\n"
               f"use --entrada para apontar a pasta do mes")
         return 2
+    pasta = a.saida if os.path.isabs(a.saida) else os.path.join(raiz, a.saida)
+    travados = conferir_escrita(pasta)
+    if travados:
+        print("\nNao da para gravar a saida: estes arquivos estao abertos em outro programa.\n")
+        for t in travados: print(f"     - {t}")
+        print("\nQuase sempre e o Excel. Feche a planilha (ou o Bloco de Notas) e rode de novo.\n"
+              "Nada foi apurado nem gravado: a saida do fechamento anterior continua intacta.")
+        return 3
+
     f = Fechamento(entrada, raiz=raiz, competencia=a.competencia).executar()
 
     ok, falhas, conferencias = autoteste(f)
@@ -70,7 +79,6 @@ def main():
         print("\nNada foi gravado. Corrija ou rode com --forcar.")
         return 1
 
-    pasta = a.saida if os.path.isabs(a.saida) else os.path.join(raiz, a.saida)
     gravar("comissoes_por_lojista.csv", f.cms_checkout + f.cms_remessa, pasta)
     gravar("divergencias_taxa.csv", f.div_checkout + f.div_remessa, pasta)
     gravar("notas_a_emitir.csv", f.nfs, pasta)
